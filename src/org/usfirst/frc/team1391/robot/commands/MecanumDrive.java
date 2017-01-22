@@ -10,9 +10,9 @@ import org.usfirst.frc.team1391.robot.subsystems.DriveBase;
 /**
  *
  */
-public class mecanumDriveCommand extends Command {
+public class MecanumDrive extends Command {
 
-    public mecanumDriveCommand() {
+    public MecanumDrive() {
         requires(Robot.driveBase);
     }
 
