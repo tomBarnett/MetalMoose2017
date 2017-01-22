@@ -13,6 +13,8 @@ public class RobotMap {
 	public static int leftB = 1;
 	public static int rightF = 2;
 	public static int rightB = 3;
+	
+	public static int shooterMotor = 4;
 
 	// If you are using multiple modules, make sure to define both the port
 	// number and the module. For example you with a rangefinder:
