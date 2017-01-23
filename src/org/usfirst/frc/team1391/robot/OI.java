@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 
 import org.usfirst.frc.team1391.robot.commands.*;
+import org.usfirst.frc.team1391.robot.triggers.JoystickTrigger;
 
 
 /**
@@ -42,7 +43,7 @@ public class OI {
 	
 	//DRIVE CODE
 	
-	
+	public JoystickTrigger whileActive = new JoystickTrigger();
 	
 	
 	
@@ -67,4 +68,9 @@ public class OI {
 	// Start the command when the button is released and let it run the command
 	// until it is finished as determined by it's isFinished method.
 	// button.whenReleased(new ExampleCommand());
+	
+	OI (){
+		whileActive.whileActive(new MecanumDrive());
+	}
+	
 }

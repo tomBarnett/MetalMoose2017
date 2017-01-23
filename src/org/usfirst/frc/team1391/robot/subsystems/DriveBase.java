@@ -15,7 +15,7 @@ public class DriveBase extends PIDSubsystem {
 	Victor rightF = new Victor(RobotMap.rightF);
 	Victor rightB = new Victor(RobotMap.rightB);
 	
-	Encoder encoderLeftF = new Encoder(RobotMap.encoderLeftF[0], RobotMap.encoderLeftF[0], false, Encoder.EncodingType.k4X);
+	//Encoder encoderLeftF = new Encoder(RobotMap.encoderLeftF[0], RobotMap.encoderLeftF[0], false, Encoder.EncodingType.k4X);
 	
     // Initialize your subsystem here
     public DriveBase() {
@@ -23,7 +23,7 @@ public class DriveBase extends PIDSubsystem {
         leftF.setInverted(true);
         leftB.setInverted(true);
         disable(); 
-        encoderLeftF.reset();
+        //encoderLeftF.reset();
     }
 
     public void initDefaultCommand() {
