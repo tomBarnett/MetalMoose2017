@@ -1,5 +1,6 @@
 package org.usfirst.frc.team1391.robot.subsystems;
 
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Victor;
 import org.usfirst.frc.team1391.robot.RobotMap;
 import edu.wpi.first.wpilibj.command.PIDSubsystem;
@@ -14,12 +15,15 @@ public class DriveBase extends PIDSubsystem {
 	Victor rightF = new Victor(RobotMap.rightF);
 	Victor rightB = new Victor(RobotMap.rightB);
 	
+	Encoder encoderLeftF = new Encoder(RobotMap.encoderLeftF[0], RobotMap.encoderLeftF[0], false, Encoder.EncodingType.k4X);
+	
     // Initialize your subsystem here
     public DriveBase() {
     	super(0, 0, 0);
         leftF.setInverted(true);
         leftB.setInverted(true);
         disable(); 
+        encoderLeftF.reset();
     }
 
     public void initDefaultCommand() {
