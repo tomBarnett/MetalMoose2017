@@ -10,18 +10,24 @@ import edu.wpi.first.wpilibj.command.PIDSubsystem;
  */
 public class DriveBase extends PIDSubsystem {
 
-	Victor leftF = new Victor(RobotMap.leftF);
-	Victor leftB = new Victor(RobotMap.leftB);
-	Victor rightF = new Victor(RobotMap.rightF);
-	Victor rightB = new Victor(RobotMap.rightB);
+	Victor leftFA = new Victor(RobotMap.leftFA);
+	Victor leftFB = new Victor(RobotMap.leftFB);
+	Victor leftBA = new Victor(RobotMap.leftBA);
+	Victor leftBB = new Victor(RobotMap.leftBB);
+	Victor rightFA = new Victor(RobotMap.rightFA);
+	Victor rightFB = new Victor(RobotMap.rightFB);
+	Victor rightBA = new Victor(RobotMap.rightBA);
+	Victor rightBB = new Victor(RobotMap.rightBB);
 	
 	//Encoder encoderLeftF = new Encoder(RobotMap.encoderLeftF[0], RobotMap.encoderLeftF[0], false, Encoder.EncodingType.k4X);
 	
     // Initialize your subsystem here
     public DriveBase() {
     	super(0, 0, 0);
-        leftF.setInverted(true);
-        leftB.setInverted(true);
+        leftFA.setInverted(true);
+        leftFB.setInverted(true);
+        leftBA.setInverted(true);
+        leftBB.setInverted(true);
         disable(); 
         //encoderLeftF.reset();
     }
@@ -33,10 +39,14 @@ public class DriveBase extends PIDSubsystem {
     
     public void mecanumDrive(double xIn, double yIn, double rotation){
     	
-    	leftF.setSpeed((xIn+yIn+rotation));
-    	leftB.setSpeed((-xIn+yIn-rotation));
-    	rightF.setSpeed((-xIn+yIn+rotation));
-    	rightB.setSpeed((xIn+yIn-rotation));
+    	leftFA.setSpeed((xIn+yIn+rotation));
+    	leftFB.setSpeed((xIn+yIn+rotation));
+    	leftBA.setSpeed((-xIn+yIn-rotation));
+    	leftBB.setSpeed((-xIn+yIn-rotation));
+    	rightFA.setSpeed((-xIn+yIn+rotation));
+    	rightFB.setSpeed((-xIn+yIn+rotation));
+    	rightBA.setSpeed((xIn+yIn-rotation));
+    	rightBB.setSpeed((xIn+yIn-rotation));
     	
     }
 

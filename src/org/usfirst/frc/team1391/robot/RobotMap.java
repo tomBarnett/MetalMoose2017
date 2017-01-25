@@ -9,10 +9,15 @@ package org.usfirst.frc.team1391.robot;
  */
 public class RobotMap {
 
-	public static int leftF = 0;
-	public static int leftB = 1;
-	public static int rightF = 2;
-	public static int rightB = 3;
+	public static int leftFA = 4;
+	public static int leftFB = 5;
+	public static int leftBA = 6;
+	public static int leftBB = 7;
+	public static int rightFA = 0;
+	public static int rightFB = 1;
+	public static int rightBA = 2;
+	public static int rightBB = 3;
+	
 	
 	public static int shooterMotor = 4;
 
