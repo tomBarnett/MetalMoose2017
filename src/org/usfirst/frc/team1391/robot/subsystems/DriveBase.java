@@ -24,10 +24,6 @@ public class DriveBase extends PIDSubsystem {
     // Initialize your subsystem here
     public DriveBase() {
     	super(0, 0, 0);
-        leftFA.setInverted(true);
-        leftFB.setInverted(true);
-        leftBA.setInverted(true);
-        leftBB.setInverted(true);
         disable(); 
         //encoderLeftF.reset();
     }
@@ -39,12 +35,12 @@ public class DriveBase extends PIDSubsystem {
     
     public void mecanumDrive(double xIn, double yIn, double rotation){
     	
-    	leftFA.setSpeed((xIn+yIn+rotation));
-    	leftFB.setSpeed((xIn+yIn+rotation));
-    	leftBA.setSpeed((-xIn+yIn-rotation));
-    	leftBB.setSpeed((-xIn+yIn-rotation));
-    	rightFA.setSpeed((-xIn+yIn+rotation));
-    	rightFB.setSpeed((-xIn+yIn+rotation));
+    	leftFA.setSpeed((xIn-yIn+rotation));
+    	leftFB.setSpeed((xIn-yIn+rotation));
+    	leftBA.setSpeed((xIn-yIn-rotation));
+    	leftBB.setSpeed((xIn-yIn-rotation));
+    	rightFA.setSpeed((xIn+yIn+rotation));
+    	rightFB.setSpeed((xIn+yIn+rotation));
     	rightBA.setSpeed((xIn+yIn-rotation));
     	rightBB.setSpeed((xIn+yIn-rotation));
     	
