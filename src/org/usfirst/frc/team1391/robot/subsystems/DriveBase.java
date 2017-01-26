@@ -68,6 +68,13 @@ public class DriveBase extends PIDSubsystem {
     	rightBB.setSpeed(speed);
     }
 
+    public void stop() {
+    	setLeftFSpeed(0);
+    	setLeftBSpeed(0);
+    	setRightFSpeed(0);
+    	setRightBSpeed(0);    	
+    }
+    
     protected double returnPIDInput() {
         // Return your input value for the PID loop
         // e.g. a sensor, like a potentiometer:

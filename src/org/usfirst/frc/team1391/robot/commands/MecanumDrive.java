@@ -37,6 +37,8 @@ public class MecanumDrive extends Command {
 
     // Called once after isFinished returns true
     protected void end() {
+    	// Stops the robor by default
+    	Robot.driveBase.stop();
     }
 
     // Called when another command which requires one or more of the same
