@@ -5,7 +5,7 @@ import org.usfirst.frc.team1391.robot.Robot;
 
 import edu.wpi.first.wpilibj.Joystick.AxisType;
 import edu.wpi.first.wpilibj.command.Command;
-import org.usfirst.frc.team1391.robot.subsystems.DriveBase;
+//import org.usfirst.frc.team1391.robot.subsystems.DriveBase;
 
 /**
  *
@@ -37,6 +37,8 @@ public class MecanumDrive extends Command {
 
     // Called once after isFinished returns true
     protected void end() {
+    	// Stops the robor by default
+    	Robot.driveBase.stop();
     }
 
     // Called when another command which requires one or more of the same
