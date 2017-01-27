@@ -1,7 +1,7 @@
 package org.usfirst.frc.team1391.robot.subsystems;
 
-import edu.wpi.first.wpilibj.PIDController;
-import edu.wpi.first.wpilibj.PIDOutput;
+//import edu.wpi.first.wpilibj.PIDController;
+//import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.SPI;
 //import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Victor;
@@ -12,8 +12,17 @@ import com.kauailabs.navx.frc.AHRS;
 /**
  *
  */
-public class DriveBase extends PIDSubsystem {
 
+public class DriveBase extends PIDSubsystem {
+	
+	// Flag for PID controller input type
+
+	public enum PIDInput {
+	  EncoderPIDInput, GyroPIDInput
+	}
+
+	PIDInput currentInputType;
+	
 	// Motors driving front-left mecanum wheel
 	Victor leftFA = new Victor(RobotMap.leftFA);
 	Victor leftFB = new Victor(RobotMap.leftFB);
@@ -34,6 +43,7 @@ public class DriveBase extends PIDSubsystem {
 	
 	AHRS ahrs;
 	
+	// PID control variables
 	public static double gyroP = 0.03;
     public static double gyroI = 0.00;
     public static double gyroD = 0.00;
@@ -43,13 +53,10 @@ public class DriveBase extends PIDSubsystem {
     
     // Initialize your subsystem here
     public DriveBase() {
-    	super(gyroP, gyroI, gyroD);
-        
-    	getPIDController().setInputRange(-180.0f,  180.0f);
+    	super(0, 0, 0);
+    	getPIDController().disable();
         getPIDController().setOutputRange(-1.0, 1.0);
-        getPIDController().setAbsoluteTolerance(kToleranceDegrees);
-        getPIDController().setContinuous(true);
-    	
+            	
         ahrs = new AHRS(SPI.Port.kMXP);
         
         //encoderLeftF.reset();
@@ -100,10 +107,19 @@ public class DriveBase extends PIDSubsystem {
     // Set the PID controller to get input from the gyro
     public void setGyroPIDControl(double setpoint){
     	
+    	getPIDController().setInputRange(-180.0f,  180.0f);
+        getPIDController().setAbsoluteTolerance(kToleranceDegrees);
+    	
     	// set PID input from gyro
+    	currentInputType = PIDInput.GyroPIDInput;
     	// set PID setpoint
+    	getPIDController().setSetpoint(setpoint);
     	// set PID values for gyro
-    	// set PID output
+    	getPIDController().setPID(gyroP, gyroI, gyroD);
+    	// set PID continues
+    	getPIDController().setContinuous(true);
+    	
+    	getPIDController().enable();
     }
     
     // Set the PID controller to get input from the encoders
@@ -116,10 +132,28 @@ public class DriveBase extends PIDSubsystem {
     }
     
     protected double returnPIDInput() {
-        return ahrs.getAngle();
+        
+    	switch (currentInputType) {
+		case EncoderPIDInput:
+			// Put Encoder input
+			return 0;
+		case GyroPIDInput:
+			return ahrs.getAngle();
+		default:
+			return 0;
+    	}
     }
 
     protected void usePIDOutput(double output) {
-        mecanumDrive(output, 0, 0);
+        
+    	switch (currentInputType) {
+		case EncoderPIDInput:
+			break;
+		case GyroPIDInput:
+	    	mecanumDrive(output, 0, 0);
+	    	break;
+		default:
+			break;    	
+		}    	
     }
 }

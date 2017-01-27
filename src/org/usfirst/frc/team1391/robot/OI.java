@@ -71,6 +71,7 @@ public class OI {
 	
 	OI (){
 		whileActive.whileActive(new MecanumDrive());
+		driverB.whileActive(new GryoRight());
 	}
 	
 }
