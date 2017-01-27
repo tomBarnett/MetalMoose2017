@@ -1,9 +1,13 @@
 package org.usfirst.frc.team1391.robot.subsystems;
 
+import edu.wpi.first.wpilibj.PIDController;
+import edu.wpi.first.wpilibj.PIDOutput;
+import edu.wpi.first.wpilibj.SPI;
 //import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Victor;
 import org.usfirst.frc.team1391.robot.RobotMap;
 import edu.wpi.first.wpilibj.command.PIDSubsystem;
+import com.kauailabs.navx.frc.AHRS;
 
 /**
  *
@@ -28,10 +32,26 @@ public class DriveBase extends PIDSubsystem {
 	
 	//Encoder encoderLeftF = new Encoder(RobotMap.encoderLeftF[0], RobotMap.encoderLeftF[0], false, Encoder.EncodingType.k4X);
 	
+	AHRS ahrs;
+	
+	public static double gyroP = 0.03;
+    public static double gyroI = 0.00;
+    public static double gyroD = 0.00;
+    //double kF = 0.00;
+    
+    double kToleranceDegrees = 2.0;
+    
     // Initialize your subsystem here
     public DriveBase() {
-    	super(0, 0, 0);
-        disable(); 
+    	super(gyroP, gyroI, gyroD);
+        
+    	getPIDController().setInputRange(-180.0f,  180.0f);
+        getPIDController().setOutputRange(-1.0, 1.0);
+        getPIDController().setAbsoluteTolerance(kToleranceDegrees);
+        getPIDController().setContinuous(true);
+    	
+        ahrs = new AHRS(SPI.Port.kMXP);
+        
         //encoderLeftF.reset();
     }
 
@@ -67,6 +87,8 @@ public class DriveBase extends PIDSubsystem {
     	rightBA.setSpeed(speed);
     	rightBB.setSpeed(speed);
     }
+    
+    
 
     public void stop() {
     	setLeftFSpeed(0);
@@ -76,14 +98,10 @@ public class DriveBase extends PIDSubsystem {
     }
     
     protected double returnPIDInput() {
-        // Return your input value for the PID loop
-        // e.g. a sensor, like a potentiometer:
-        // yourPot.getAverageVoltage() / kYourMaxVoltage;
-        return 0.0;
+        return ahrs.getAngle();
     }
 
     protected void usePIDOutput(double output) {
-        // Use output to drive your system, like a motor
-        // e.g. yourMotor.set(output);
+        
     }
 }
