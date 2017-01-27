@@ -23,7 +23,7 @@ public class MecanumDrive extends Command {
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
     	double xIn = OI.driver.getAxis(AxisType.kX);
-    	double yIn = OI.driver.getAxis(AxisType.kY);
+    	double yIn = OI.driver.getAxis(AxisType.kThrottle);
     	double zIn = OI.driver.getAxis(AxisType.kZ);
     	
     	Robot.driveBase.mecanumDrive(xIn, yIn, zIn);
