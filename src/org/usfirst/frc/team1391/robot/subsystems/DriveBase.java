@@ -22,7 +22,7 @@ public class DriveBase extends PIDSubsystem {
 	Victor rightFA = new Victor(RobotMap.rightFA);
 	Victor rightFB = new Victor(RobotMap.rightFB);
 	
-	// Motors driving back-left mecanum wheel
+	// Motors driving back-right mecanum wheel
 	Victor rightBA = new Victor(RobotMap.rightBA);
 	Victor rightBB = new Victor(RobotMap.rightBB);
 	
@@ -30,7 +30,7 @@ public class DriveBase extends PIDSubsystem {
 	
     // Initialize your subsystem here
     public DriveBase() {
-    	super(0, 0, 0);
+    	super(0, 0, 0, 0);
         disable(); 
         //encoderLeftF.reset();
     }
@@ -73,6 +73,24 @@ public class DriveBase extends PIDSubsystem {
     	setLeftBSpeed(0);
     	setRightFSpeed(0);
     	setRightBSpeed(0);    	
+    }
+    
+    // Set the PID controller to get input from the gyro
+    public void setGyroPIDControl(double setpoint){
+    	
+    	// set PID input from gyro
+    	// set PID setpoint
+    	// set PID values for gyro
+    	// set PID output
+    }
+    
+    // Set the PID controller to get input from the encoders
+    public void setEncoderPIDControl(double setpoint) {
+    	
+    	// set PID input from encoder
+    	// set PID setpoint
+    	// set PID values for encoder
+    	// set PID output
     }
     
     protected double returnPIDInput() {
