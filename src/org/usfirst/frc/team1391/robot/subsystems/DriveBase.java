@@ -18,7 +18,7 @@ public class DriveBase extends PIDSubsystem {
 	// Flag for PID controller input type
 
 	public enum PIDInput {
-	  EncoderPIDInput, GyroPIDInput
+	  NoPIDInput, EncoderPIDInput, GyroPIDInput
 	}
 
 	PIDInput currentInputType;
@@ -54,7 +54,7 @@ public class DriveBase extends PIDSubsystem {
     // Initialize your subsystem here
     public DriveBase() {
     	super(0, 0, 0);
-    	getPIDController().disable();
+//    	getPIDController().disable();
         getPIDController().setOutputRange(-1.0, 1.0);
             	
         ahrs = new AHRS(SPI.Port.kMXP);
@@ -134,6 +134,8 @@ public class DriveBase extends PIDSubsystem {
     protected double returnPIDInput() {
         
     	switch (currentInputType) {
+    	case NoPIDInput:
+    		return 0;
 		case EncoderPIDInput:
 			// Put Encoder input
 			return 0;
@@ -147,6 +149,8 @@ public class DriveBase extends PIDSubsystem {
     protected void usePIDOutput(double output) {
         
     	switch (currentInputType) {
+    	case NoPIDInput:
+    		break;
 		case EncoderPIDInput:
 			break;
 		case GyroPIDInput:
