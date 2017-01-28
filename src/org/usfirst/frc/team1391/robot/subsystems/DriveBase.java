@@ -1,5 +1,6 @@
 package org.usfirst.frc.team1391.robot.subsystems;
 
+import edu.wpi.first.wpilibj.Encoder;
 //import edu.wpi.first.wpilibj.PIDController;
 //import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.SPI;
@@ -39,7 +40,7 @@ public class DriveBase extends PIDSubsystem {
 	Victor rightBA = new Victor(RobotMap.rightBA);
 	Victor rightBB = new Victor(RobotMap.rightBB);
 	
-	//Encoder encoderLeftF = new Encoder(RobotMap.encoderLeftF[0], RobotMap.encoderLeftF[0], false, Encoder.EncodingType.k4X);
+	Encoder encoderLeftF = new Encoder(RobotMap.encoderLeftF[0], RobotMap.encoderLeftF[0], false, Encoder.EncodingType.k4X);
 	
 	AHRS ahrs;
 	
@@ -54,7 +55,7 @@ public class DriveBase extends PIDSubsystem {
     // Initialize your subsystem here
     public DriveBase() {
     	super(0, 0, 0);
-//    	getPIDController().disable();
+
         getPIDController().setOutputRange(-1.0, 1.0);
             	
         ahrs = new AHRS(SPI.Port.kMXP);
@@ -140,7 +141,8 @@ public class DriveBase extends PIDSubsystem {
 			// Put Encoder input
 			return 0;
 		case GyroPIDInput:
-			return ahrs.getAngle();
+			//System.out.println(ahrs.getAngle());
+			return ahrs.getYaw();
 		default:
 			return 0;
     	}
