@@ -8,6 +8,8 @@ import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Victor;
 import org.usfirst.frc.team1391.robot.RobotMap;
 import edu.wpi.first.wpilibj.command.PIDSubsystem;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import com.kauailabs.navx.frc.AHRS;
 
 /**
@@ -45,8 +47,8 @@ public class DriveBase extends PIDSubsystem {
 	AHRS ahrs;
 	
 	// PID control variables
-	public static double gyroP = 0.03;
-    public static double gyroI = 0.00;
+	public static double gyroP = 0.06;
+    public static double gyroI = 0.002;
     public static double gyroD = 0.00;
     //double kF = 0.00;
     
@@ -108,19 +110,27 @@ public class DriveBase extends PIDSubsystem {
     // Set the PID controller to get input from the gyro
     public void setGyroPIDControl(double setpoint){
     	
-    	getPIDController().setInputRange(-180.0f,  180.0f);
+    	if(currentInputType != PIDInput.GyroPIDInput){
+    	getPIDController().setInputRange(-180.0,  180.0);
         getPIDController().setAbsoluteTolerance(kToleranceDegrees);
-    	
     	// set PID input from gyro
-    	currentInputType = PIDInput.GyroPIDInput;
+        currentInputType = PIDInput.GyroPIDInput;
     	// set PID setpoint
-    	getPIDController().setSetpoint(setpoint);
+    	
     	// set PID values for gyro
     	getPIDController().setPID(gyroP, gyroI, gyroD);
     	// set PID continues
     	getPIDController().setContinuous(true);
-    	
     	getPIDController().enable();
+    	getPIDController().setSetpoint(setpoint);
+    	}
+    	
+    	SmartDashboard.putNumber("YAW", ahrs.getYaw());
+    	
+    	if(getPIDController().onTarget()){
+    		setNoPid();
+    	}
+    	
     }
     
     // Set the PID controller to get input from the encoders
@@ -132,8 +142,9 @@ public class DriveBase extends PIDSubsystem {
     	// set PID output
     }
     
-    public void setNoPid (){
+    public void setNoPid(){
     	currentInputType = PIDInput.NoPIDInput;
+    	getPIDController().disable();
     }
     
     protected double returnPIDInput() {
