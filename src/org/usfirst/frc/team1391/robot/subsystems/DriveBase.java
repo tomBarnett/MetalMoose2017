@@ -40,7 +40,7 @@ public class DriveBase extends PIDSubsystem {
 	Victor rightBA = new Victor(RobotMap.rightBA);
 	Victor rightBB = new Victor(RobotMap.rightBB);
 	
-	Encoder encoderLeftF = new Encoder(RobotMap.encoderLeftF[0], RobotMap.encoderLeftF[0], false, Encoder.EncodingType.k4X);
+	//Encoder encoderLeftF = new Encoder(RobotMap.encoderLeftF[0], RobotMap.encoderLeftF[0], false, Encoder.EncodingType.k4X);
 	
 	AHRS ahrs;
 	
@@ -132,6 +132,10 @@ public class DriveBase extends PIDSubsystem {
     	// set PID output
     }
     
+    public void setNoPid (){
+    	currentInputType = PIDInput.NoPIDInput;
+    }
+    
     protected double returnPIDInput() {
         
     	switch (currentInputType) {
@@ -141,7 +145,6 @@ public class DriveBase extends PIDSubsystem {
 			// Put Encoder input
 			return 0;
 		case GyroPIDInput:
-			//System.out.println(ahrs.getAngle());
 			return ahrs.getYaw();
 		default:
 			return 0;
@@ -157,6 +160,7 @@ public class DriveBase extends PIDSubsystem {
 			break;
 		case GyroPIDInput:
 	    	mecanumDrive(output, 0, 0);
+	    	System.out.println("002");
 	    	break;
 		default:
 			break;    	
