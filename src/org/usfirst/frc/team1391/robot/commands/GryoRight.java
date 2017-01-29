@@ -16,7 +16,7 @@ public class GryoRight extends Command {
     public GryoRight() {
         // Use requires() here to declare subsystem dependencies
         requires(Robot.driveBase);
-        this.setInterruptible(false);
+        this.setInterruptible(true);
     }
 
     // Called just before this Command runs the first time
@@ -48,6 +48,8 @@ public class GryoRight extends Command {
     // Called when another command which requires one or more of the same
     // subsystems is scheduled to run
     protected void interrupted() {
-    	Robot.driveBase.stop();
+    	System.out.println("GyroInterruted");
+    	Robot.driveBase.setNoPid();
+    	end();
     }
 }

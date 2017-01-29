@@ -17,7 +17,7 @@ public class JoystickTrigger extends Trigger {
     	double driverY = OI.driver.getAxis(AxisType.kY);
     	double driverZ = OI.driver.getAxis(AxisType.kZ);
     	double driverThrottle = OI.driver.getAxis(AxisType.kThrottle);
-    	if(DriverStation.getInstance().isOperatorControl() && driverX == 0 && driverY == 0 && driverZ == 0 && driverThrottle == 0){
+    	if(DriverStation.getInstance().isOperatorControl() && (driverX != 0 || driverY != 0 || driverZ != 0 || driverThrottle != 0)){
     		return true;
     	}
     	
