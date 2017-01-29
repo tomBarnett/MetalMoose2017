@@ -1,10 +1,7 @@
 package org.usfirst.frc.team1391.robot.subsystems;
 
 import edu.wpi.first.wpilibj.Encoder;
-//import edu.wpi.first.wpilibj.PIDController;
-//import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.SPI;
-//import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Victor;
 import org.usfirst.frc.team1391.robot.RobotMap;
 import edu.wpi.first.wpilibj.command.PIDSubsystem;
@@ -154,9 +151,12 @@ public class DriveBase extends PIDSubsystem {
     	case NoPIDInput:
     		return 0;
 		case EncoderPIDInput:
+			
 			// Put Encoder input
+			
 			return 0;
 		case GyroPIDInput:
+			// Use the Yaw values provided by NavX interface
 			return ahrs.getYaw();
 		default:
 			return 0;
