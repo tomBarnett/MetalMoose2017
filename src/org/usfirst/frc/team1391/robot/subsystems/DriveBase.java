@@ -128,7 +128,8 @@ public class DriveBase extends PIDSubsystem {
     	SmartDashboard.putNumber("YAW", ahrs.getYaw());
     	
     	if(getPIDController().onTarget()){
-    		setNoPid();
+    		setNoPid(); 
+    		
     	}
     	
     }
