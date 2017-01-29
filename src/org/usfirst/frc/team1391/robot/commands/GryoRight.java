@@ -27,7 +27,9 @@ public class GryoRight extends Command {
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-    	if(OI.driver.getRawButton(2)){
+    	
+    	// Set finished when driver button A is not pressed down
+    	if(OI.driverA.get()){
     		return false;
     	}else{
     		Robot.driveBase.setNoPid();
