@@ -16,9 +16,9 @@ public class Shooter extends Subsystem {
       
     }
     
-    public void shoot(float shooterSpeed){
+    public void shoot(double shootSpeed){
     	
-    	shooter.set(shooterSpeed);
+    	shooter.set(shootSpeed);
     	
     }
     

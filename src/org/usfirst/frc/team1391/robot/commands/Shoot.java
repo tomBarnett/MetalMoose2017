@@ -20,7 +20,8 @@ public class Shoot extends Command {
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
     	
-    	
+    	double shootSpeed = 0.8;
+    	Robot.shooter.shoot(shootSpeed);
     	
     }
 
