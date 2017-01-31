@@ -70,8 +70,7 @@ public class OI {
 	// button.whenReleased(new ExampleCommand());
 	
 	OI (){
-		driverB.whileActive(new GryoRight());
-		whileActive.whileActive(new MecanumDrive());
+		
 	}
 	
 }

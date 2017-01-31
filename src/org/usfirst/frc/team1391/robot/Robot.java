@@ -8,7 +8,10 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import org.usfirst.frc.team1391.robot.commands.GyroRight;
+import org.usfirst.frc.team1391.robot.commands.MecanumDrive;
 import org.usfirst.frc.team1391.robot.subsystems.DriveBase;
+import org.usfirst.frc.team1391.robot.subsystems.Shooter;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -20,6 +23,10 @@ import org.usfirst.frc.team1391.robot.subsystems.DriveBase;
 public class Robot extends IterativeRobot {
 
 	public static final DriveBase driveBase = new DriveBase();
+	
+	public static final Shooter shooter = new Shooter();
+	public static final GyroRight gyroRight = new GyroRight();
+	public static final MecanumDrive mecanumDrive = new MecanumDrive();
 	public static OI oi;
 
 	Command autonomousCommand;
@@ -88,10 +95,7 @@ public class Robot extends IterativeRobot {
 
 	@Override
 	public void teleopInit() {
-		// This makes sure that the autonomous stops running when
-		// teleop starts running. If you want the autonomous to
-		// continue until interrupted by another command, remove
-		// this line or comment it out.
+
 		if (autonomousCommand != null)
 			autonomousCommand.cancel();
 	}
@@ -101,7 +105,15 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
-		Scheduler.getInstance().run();
+
+		if (OI.driverA.get()) {
+			gyroRight.execute();
+		} else {
+			mecanumDrive.execute();
+		}
+		
+		
+
 	}
 
 	/**
@@ -111,4 +123,5 @@ public class Robot extends IterativeRobot {
 	public void testPeriodic() {
 		LiveWindow.run();
 	}
+
 }
