@@ -40,6 +40,7 @@ public class Robot extends IterativeRobot {
 	SendableChooser<Command> chooser = new SendableChooser<>();
 
 	public static boolean visionFlag = true;
+	public static boolean visionTarget = false; //false = gear; true = target;  
 	
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -54,6 +55,7 @@ public class Robot extends IterativeRobot {
 		CameraServer.getInstance().addAxisCamera("10.13.91.3");
 		CameraServer.getInstance().addServer("10.13.91.3");
 		
+		SmartDashboard.putBoolean("visionTarget", visionTarget);
 		
 	}
 
@@ -126,7 +128,7 @@ public class Robot extends IterativeRobot {
 		}else if(OI.driverY.get()) {
 			gyroStop.execute();
 			System.out.println(101);
-		}else if(!driveBase.getPIDController().isEnabled() && !gear.active){
+		}else if(!driveBase.getPIDController().isEnabled() && !Robot.gear.active){
 			mecanumDrive.execute();
 			System.out.println(303);
 		}
@@ -142,6 +144,22 @@ public class Robot extends IterativeRobot {
 			gear.close();
 		}else{
 			gear.stop();
+		}
+		
+		if(OI.driverX.get()){
+			Robot.gear.active = true;
+		}else if(OI.driverA.get()){
+			Robot.gear.sequenceEject();
+		}
+		
+		Robot.gear.sequence();
+		
+		if(OI.driverLT.get()){ //gear
+			visionTarget = false;
+			SmartDashboard.putBoolean("visionTarget", visionTarget);
+		}else if(OI.driverRT.get()){ //vision target
+			visionTarget = true;
+			SmartDashboard.putBoolean("visionTarget", visionTarget);
 		}
 
 	}

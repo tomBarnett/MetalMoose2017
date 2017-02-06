@@ -26,7 +26,7 @@ public class MecanumDrive extends Command {
     	double yIn = OI.driver.getAxis(AxisType.kThrottle);
     	double zIn = OI.driver.getAxis(AxisType.kZ);
     	
-    	Robot.driveBase.mecanumDrive(xIn, yIn, zIn);
+    	Robot.driveBase.mecanumDrive(xIn, zIn, yIn);
     	
     	System.out.println("001");
     	System.out.println(xIn);
