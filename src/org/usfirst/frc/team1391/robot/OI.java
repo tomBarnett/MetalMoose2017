@@ -31,6 +31,9 @@ public class OI {
 	public static Button driverLT = new JoystickButton (driver, 7);
 	public static Button driverRT = new JoystickButton (driver, 8);
 	
+	public static Button driverJoyL = new JoystickButton (driver, 11);
+	public static Button driverJoyR = new JoystickButton (driver, 12);
+	
 	public static Button operatorX = new JoystickButton (operator, 1);
 	public static Button operatorA = new JoystickButton (operator, 2);
 	public static Button operatorB = new JoystickButton (operator, 3);
@@ -40,6 +43,9 @@ public class OI {
 	public static Button operatorRB = new JoystickButton (operator, 6);
 	public static Button operatorLT = new JoystickButton (operator, 7);
 	public static Button operatorRT = new JoystickButton (operator, 8);
+	
+	public static Button operatorJoyL = new JoystickButton (operator, 11);
+	public static Button operatorJoyR = new JoystickButton (operator, 12);
 	
 	//DRIVE CODE
 	

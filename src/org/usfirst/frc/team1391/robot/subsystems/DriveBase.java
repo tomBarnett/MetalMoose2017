@@ -1,7 +1,9 @@
 package org.usfirst.frc.team1391.robot.subsystems;
 
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Victor;
 import org.usfirst.frc.team1391.robot.RobotMap;
 import edu.wpi.first.wpilibj.command.PIDSubsystem;
@@ -39,6 +41,12 @@ public class DriveBase extends PIDSubsystem {
 	Victor rightBA = new Victor(RobotMap.rightBA);
 	Victor rightBB = new Victor(RobotMap.rightBB);
 
+	//SOLENOIDS
+	DoubleSolenoid solRightF = new DoubleSolenoid(RobotMap.solRightF[0], RobotMap.solRightF[1]);
+	DoubleSolenoid solRightB = new DoubleSolenoid(RobotMap.solRightB[0], RobotMap.solRightB[1]);
+	DoubleSolenoid solLeftF = new DoubleSolenoid(RobotMap.solLeftF[0], RobotMap.solLeftF[1]);
+	DoubleSolenoid solLeftB = new DoubleSolenoid(RobotMap.solLeftB[0], RobotMap.solLeftB[1]);
+	
 	// Encoder encoderLeftF = new Encoder(RobotMap.encoderLeftF[0],
 	// RobotMap.encoderLeftF[0], false, Encoder.EncodingType.k4X);
 
@@ -78,6 +86,24 @@ public class DriveBase extends PIDSubsystem {
 		setRightBSpeed(xIn + yIn - rotation);
 	}
 
+	public void lowGear(){
+		
+		solRightF.set(DoubleSolenoid.Value.kForward);
+		solRightB.set(DoubleSolenoid.Value.kForward);
+		solLeftF.set(DoubleSolenoid.Value.kForward);
+		solLeftB.set(DoubleSolenoid.Value.kForward);
+		
+	}
+	
+	public void highGear(){
+		
+		solRightF.set(DoubleSolenoid.Value.kReverse);
+		solRightB.set(DoubleSolenoid.Value.kReverse);
+		solLeftF.set(DoubleSolenoid.Value.kReverse);
+		solLeftB.set(DoubleSolenoid.Value.kReverse);
+		
+	}
+	
 	public void motorTest() {
 		leftFA.set(.5);
 		leftFB.set(.5);

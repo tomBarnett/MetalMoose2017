@@ -132,11 +132,18 @@ public class Robot extends IterativeRobot {
 			mecanumDrive.execute();
 			System.out.println(303);
 		}
-		driveBase.getAngle();
 		
 		if(!OI.driverB.get() && visionFlag == true){
 			visionFlag = false;
 		}
+		
+		if(OI.driverJoyL.get()){
+			driveBase.lowGear();
+		}else if(OI.driverJoyR.get()){
+			driveBase.highGear();
+		}
+		
+		driveBase.getAngle();
 		
 		if(OI.driverLB.get()){
 			gear.open();

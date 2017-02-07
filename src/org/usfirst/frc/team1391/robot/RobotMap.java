@@ -24,4 +24,9 @@ public class RobotMap {
 
 	public static int encoderLeftF[] = {0, 1};
 	
+	public static int solRightF[] = {0, 1};
+	public static int solRightB[] = {2, 3};
+	public static int solLeftF[] = {4, 5};
+	public static int solLeftB[] = {6, 7};
+	
 }
