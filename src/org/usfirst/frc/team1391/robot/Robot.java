@@ -1,6 +1,7 @@
 
 package org.usfirst.frc.team1391.robot;
 
+import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
@@ -8,7 +9,13 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import org.usfirst.frc.team1391.robot.commands.GyroRight;
+import org.usfirst.frc.team1391.robot.commands.GyroStop;
+import org.usfirst.frc.team1391.robot.commands.GyroVision;
+import org.usfirst.frc.team1391.robot.commands.MecanumDrive;
 import org.usfirst.frc.team1391.robot.subsystems.DriveBase;
+import org.usfirst.frc.team1391.robot.subsystems.Gear;
+import org.usfirst.frc.team1391.robot.subsystems.Shooter;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -20,11 +27,21 @@ import org.usfirst.frc.team1391.robot.subsystems.DriveBase;
 public class Robot extends IterativeRobot {
 
 	public static final DriveBase driveBase = new DriveBase();
+	public static final Gear gear = new Gear();
+	
+	public static final Shooter shooter = new Shooter();
+	public static final GyroRight gyroRight = new GyroRight();
+	public static final GyroVision gyroVision = new GyroVision();
+	public static final GyroStop gyroStop = new GyroStop();
+	public static final MecanumDrive mecanumDrive = new MecanumDrive();
 	public static OI oi;
 
 	Command autonomousCommand;
 	SendableChooser<Command> chooser = new SendableChooser<>();
 
+	public static boolean visionFlag = true;
+	public static boolean visionTarget = false; //false = gear; true = target;  
+	
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -34,6 +51,12 @@ public class Robot extends IterativeRobot {
 		oi = new OI();
 		// chooser.addObject("My Auto", new MyAutoCommand());
 		SmartDashboard.putData("Auto mode", chooser);
+		
+		CameraServer.getInstance().addAxisCamera("10.13.91.3");
+		CameraServer.getInstance().addServer("10.13.91.3");
+		
+		SmartDashboard.putBoolean("visionTarget", visionTarget);
+		
 	}
 
 	/**
@@ -88,10 +111,7 @@ public class Robot extends IterativeRobot {
 
 	@Override
 	public void teleopInit() {
-		// This makes sure that the autonomous stops running when
-		// teleop starts running. If you want the autonomous to
-		// continue until interrupted by another command, remove
-		// this line or comment it out.
+
 		if (autonomousCommand != null)
 			autonomousCommand.cancel();
 	}
@@ -101,7 +121,54 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
-		Scheduler.getInstance().run();
+
+		if (OI.driverB.get() && visionFlag == false) {
+			gyroVision.execute();
+			System.out.println(202);
+		}else if(OI.driverY.get()) {
+			gyroStop.execute();
+			System.out.println(101);
+		}else if(!driveBase.getPIDController().isEnabled() && !Robot.gear.active){
+			mecanumDrive.execute();
+			System.out.println(303);
+		}
+		
+		if(!OI.driverB.get() && visionFlag == true){
+			visionFlag = false;
+		}
+		
+		if(OI.driverJoyL.get()){
+			driveBase.lowGear();
+		}else if(OI.driverJoyR.get()){
+			driveBase.highGear();
+		}
+		
+		driveBase.getAngle();
+		
+		if(OI.driverLB.get()){
+			gear.open();
+		}else if(OI.driverRB.get()){
+			gear.close();
+		}else{
+			gear.stop();
+		}
+		
+		if(OI.driverX.get()){
+			Robot.gear.active = true;
+		}else if(OI.driverA.get()){
+			Robot.gear.sequenceEject();
+		}
+		
+		Robot.gear.sequence();
+		
+		if(OI.driverLT.get()){ //gear
+			visionTarget = false;
+			SmartDashboard.putBoolean("visionTarget", visionTarget);
+		}else if(OI.driverRT.get()){ //vision target
+			visionTarget = true;
+			SmartDashboard.putBoolean("visionTarget", visionTarget);
+		}
+
 	}
 
 	/**
@@ -111,4 +178,5 @@ public class Robot extends IterativeRobot {
 	public void testPeriodic() {
 		LiveWindow.run();
 	}
+
 }

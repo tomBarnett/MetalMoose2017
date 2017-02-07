@@ -3,14 +3,15 @@ package org.usfirst.frc.team1391.robot.commands;
 import org.usfirst.frc.team1391.robot.Robot;
 
 import edu.wpi.first.wpilibj.command.Command;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  *
  */
-public class Shoot extends Command {
+public class GyroVision extends Command {
 
-    public Shoot() {
-       requires(Robot.shooter);
+    public GyroVision() {
+       requires(Robot.driveBase);
     }
 
     // Called just before this Command runs the first time
@@ -18,10 +19,11 @@ public class Shoot extends Command {
     }
 
     // Called repeatedly when this Command is scheduled to run
-    protected void execute() {
+    public void execute() {
+    	double gyroAngle = Robot.driveBase.getAngle();
+    	double visionAngle = SmartDashboard.getNumber("angle", gyroAngle);
     	
-    	double shootSpeed = 0.8;
-    	Robot.shooter.shoot(shootSpeed);
+    	Robot.driveBase.setGyroPIDControl(gyroAngle - visionAngle);
     	
     }
 

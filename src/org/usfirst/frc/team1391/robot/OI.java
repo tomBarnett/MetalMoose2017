@@ -21,25 +21,31 @@ public class OI {
 	public static Joystick driver = new Joystick(0);
 	public static Joystick operator = new Joystick(1);
 	
-	public static Button driverX = new JoystickButton (driver, 0);
-	public static Button driverA = new JoystickButton (driver, 1);
-	public static Button driverB = new JoystickButton (driver, 2);
-	public static Button driverY = new JoystickButton (driver, 3);
+	public static Button driverX = new JoystickButton (driver, 1);
+	public static Button driverA = new JoystickButton (driver, 2);
+	public static Button driverB = new JoystickButton (driver, 3);
+	public static Button driverY = new JoystickButton (driver, 4);
 	
-	public static Button driverLB = new JoystickButton (driver, 4);
-	public static Button driverRB = new JoystickButton (driver, 5);
-	public static Button driverLT = new JoystickButton (driver, 6);
-	public static Button driverRT = new JoystickButton (driver, 7);
+	public static Button driverLB = new JoystickButton (driver, 5);
+	public static Button driverRB = new JoystickButton (driver, 6);
+	public static Button driverLT = new JoystickButton (driver, 7);
+	public static Button driverRT = new JoystickButton (driver, 8);
 	
-	public static Button operatorX = new JoystickButton (operator, 0);
-	public static Button operatorA = new JoystickButton (operator, 1);
-	public static Button operatorB = new JoystickButton (operator, 2);
-	public static Button operatorY = new JoystickButton (operator, 3);
+	public static Button driverJoyL = new JoystickButton (driver, 11);
+	public static Button driverJoyR = new JoystickButton (driver, 12);
 	
-	public static Button operatorLB = new JoystickButton (operator, 4);
-	public static Button operatorRB = new JoystickButton (operator, 5);
-	public static Button operatorLT = new JoystickButton (operator, 6);
-	public static Button operatorRT = new JoystickButton (operator, 7);
+	public static Button operatorX = new JoystickButton (operator, 1);
+	public static Button operatorA = new JoystickButton (operator, 2);
+	public static Button operatorB = new JoystickButton (operator, 3);
+	public static Button operatorY = new JoystickButton (operator, 4);
+	
+	public static Button operatorLB = new JoystickButton (operator, 5);
+	public static Button operatorRB = new JoystickButton (operator, 6);
+	public static Button operatorLT = new JoystickButton (operator, 7);
+	public static Button operatorRT = new JoystickButton (operator, 8);
+	
+	public static Button operatorJoyL = new JoystickButton (operator, 11);
+	public static Button operatorJoyR = new JoystickButton (operator, 12);
 	
 	//DRIVE CODE
 	
@@ -70,8 +76,7 @@ public class OI {
 	// button.whenReleased(new ExampleCommand());
 	
 	OI (){
-		driverB.whileActive(new GryoRight());
-		whileActive.whileActive(new MecanumDrive());
+		
 	}
 	
 }

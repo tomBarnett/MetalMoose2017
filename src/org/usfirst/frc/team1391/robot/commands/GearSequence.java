@@ -1,16 +1,13 @@
 package org.usfirst.frc.team1391.robot.commands;
 
-import org.usfirst.frc.team1391.robot.Robot;
-
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
  *
  */
-public class Shoot extends Command {
+public class GearSequence extends Command {
 
-    public Shoot() {
-       requires(Robot.shooter);
+    public GearSequence() {
     }
 
     // Called just before this Command runs the first time
@@ -20,8 +17,7 @@ public class Shoot extends Command {
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
     	
-    	double shootSpeed = 0.8;
-    	Robot.shooter.shoot(shootSpeed);
+  
     	
     }
 

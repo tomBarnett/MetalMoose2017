@@ -21,26 +21,25 @@ public class MecanumDrive extends Command {
     }
 
     // Called repeatedly when this Command is scheduled to run
-    protected void execute() {
+    public void execute() {
     	double xIn = OI.driver.getAxis(AxisType.kX);
     	double yIn = OI.driver.getAxis(AxisType.kThrottle);
     	double zIn = OI.driver.getAxis(AxisType.kZ);
     	
-    	Robot.driveBase.mecanumDrive(xIn, yIn, zIn);
+    	Robot.driveBase.mecanumDrive(xIn, zIn, yIn);
     	
     	System.out.println("001");
+    	System.out.println(xIn);
     	
     }
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return false;
+        return true;
     }
 
     // Called once after isFinished returns true
     protected void end() {
-    	
-    	Robot.driveBase.stop();
     	
     }
 

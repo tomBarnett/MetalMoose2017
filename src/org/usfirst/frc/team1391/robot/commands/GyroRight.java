@@ -11,9 +11,9 @@ import edu.wpi.first.wpilibj.command.Command;
  *	
  *	<p><b>Note:</b> the driver will not have the control of the robot until the robot is correctly oriented to 90 degrees to the field orientation.
  */
-public class GryoRight extends Command {
+public class GyroRight extends Command {
 
-    public GryoRight() {
+    public GyroRight() {
         // Use requires() here to declare subsystem dependencies
         requires(Robot.driveBase);
         this.setInterruptible(true);
@@ -21,11 +21,14 @@ public class GryoRight extends Command {
 
     // Called just before this Command runs the first time
     protected void initialize() {   
-    	Robot.driveBase.setGyroPIDControl(90);
+    	
     }
 
     // Called repeatedly when this Command is scheduled to run
-    protected void execute() {
+    public void execute() {
+    	
+    	Robot.driveBase.setGyroPIDControl(90);
+    	
     }
 
     // Make this return true when this Command no longer needs to run execute()
