@@ -1,9 +1,9 @@
 package org.usfirst.frc.team1391.robot.subsystems;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.Encoder;
+//import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.Solenoid;
+//import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Victor;
 import org.usfirst.frc.team1391.robot.RobotMap;
 import edu.wpi.first.wpilibj.command.PIDSubsystem;
@@ -86,7 +86,7 @@ public class DriveBase extends PIDSubsystem {
 		setRightBSpeed(xIn + yIn - rotation);
 	}
 
-	public void lowGear(){
+	public void setToLowGear(){
 		
 		solRightF.set(DoubleSolenoid.Value.kForward);
 		solRightB.set(DoubleSolenoid.Value.kForward);
@@ -95,7 +95,7 @@ public class DriveBase extends PIDSubsystem {
 		
 	}
 	
-	public void highGear(){
+	public void setToHighGear(){
 		
 		solRightF.set(DoubleSolenoid.Value.kReverse);
 		solRightB.set(DoubleSolenoid.Value.kReverse);

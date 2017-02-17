@@ -19,6 +19,7 @@ public class RobotMap {
 	public static int rightBB = 3;
 	
 	public static int shooterMotor = 8;
+	public static int feederMotor;
 	
 	public static int gearGate = 9;
 
