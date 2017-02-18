@@ -138,9 +138,9 @@ public class Robot extends IterativeRobot {
 		}
 		
 		if(OI.driverJoyL.get()){
-			driveBase.lowGear();
+			driveBase.setToLowGear();
 		}else if(OI.driverJoyR.get()){
-			driveBase.highGear();
+			driveBase.setToHighGear();
 		}
 		
 		driveBase.getAngle();

@@ -19,6 +19,9 @@ public class RobotMap {
 	public static int rightBB = 3;
 	
 	public static int shooterMotor = 8;
+	public static int feederMotor;
+	
+	public static int collectorMotor;
 	
 	public static int gearGate = 9;
 
@@ -29,4 +32,5 @@ public class RobotMap {
 	public static int solLeftF[] = {4, 5};
 	public static int solLeftB[] = {6, 7};
 	
+	public static int shooterEncoder[] = {8, 9};
 }
