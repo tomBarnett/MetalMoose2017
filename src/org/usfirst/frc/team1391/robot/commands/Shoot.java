@@ -21,7 +21,7 @@ public class Shoot extends Command {
     protected void execute() {
     	
     	double shootSpeed = 0.8;
-    	Robot.shooter.startShootWithShooterSpeed(shootSpeed);
+    	Robot.shooter.shootWithShooterSpeed(shootSpeed);
     	
     }
 

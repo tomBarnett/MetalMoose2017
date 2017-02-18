@@ -31,17 +31,31 @@ public class Shooter extends Subsystem {
     	feeder.set(feederSpeed);
     }
     
-    public void startShooting() {
+    public void shoot() {
     	// Use default shooter speed and default feeder speed
     	setShooterSpeed(defaultShooterSpeed);
     	setFeederSpeed(defaultFeederSpeed);
     }
     
-    public void startShootWithShooterSpeed(double shooterSpeed) {
+    public void shootWithShooterSpeed(double shooterSpeed) {
     	setShooterSpeed(shooterSpeed);
     	setFeederSpeed(defaultFeederSpeed);
     }
     
+    public void shootWithShooterSpeedAndFeederSpeed(double shooterSpeed, double feederSpeed) {
+    	setShooterSpeed(shooterSpeed);
+    	setFeederSpeed(feederSpeed);
+    }
     
+    public void shootWithEncoderSetRate(double setRate){
+    	double baseSpeed = 0.62;
+    	double protionMultiplier = 1.0;
+    	double result = 0;
+    	
+    	double currentRate = shooterEncoder.getRate();
+    	// A single PID loop with encoder as feedback to adjust motor speed to meet the desired set rate.
+    	
+    	shootWithShooterSpeed(result);
+    }
 }
 
