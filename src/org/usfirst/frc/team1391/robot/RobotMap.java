@@ -21,6 +21,8 @@ public class RobotMap {
 	public static int shooterMotor = 8;
 	public static int feederMotor;
 	
+	public static int collectorMotor;
+	
 	public static int gearGate = 9;
 
 	public static int encoderLeftF[] = {0, 1};
