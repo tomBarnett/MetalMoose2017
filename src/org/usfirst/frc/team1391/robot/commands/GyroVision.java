@@ -20,10 +20,11 @@ public class GyroVision extends Command {
 
     // Called repeatedly when this Command is scheduled to run
     public void execute() {
-    	double gyroAngle = Robot.driveBase.getAngle();
-    	double visionAngle = SmartDashboard.getNumber("angle", gyroAngle);
+    	double gyroAngle = Robot.driveBase.getAngle(); //angle of gyro
+    	double visionAngle = SmartDashboard.getNumber("angle", gyroAngle); //angle of displacement from camera
     	
-    	Robot.driveBase.setGyroPIDControl(gyroAngle - visionAngle);
+    	Robot.driveBase.setGyroPIDControl(gyroAngle - visionAngle); //feeds it into a pid loop to posotion
+    																//uses gyro to get around lag of vision
     	
     }
 

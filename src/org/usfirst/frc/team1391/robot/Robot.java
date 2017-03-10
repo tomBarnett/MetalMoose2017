@@ -15,6 +15,8 @@ import org.usfirst.frc.team1391.robot.commands.GyroVision;
 import org.usfirst.frc.team1391.robot.commands.MecanumDrive;
 import org.usfirst.frc.team1391.robot.subsystems.DriveBase;
 import org.usfirst.frc.team1391.robot.subsystems.Gear;
+import org.usfirst.frc.team1391.robot.subsystems.Hanger;
+import org.usfirst.frc.team1391.robot.subsystems.Intake;
 import org.usfirst.frc.team1391.robot.subsystems.Shooter;
 
 /**
@@ -28,6 +30,8 @@ public class Robot extends IterativeRobot {
 
 	public static final DriveBase driveBase = new DriveBase();
 	public static final Gear gear = new Gear();
+	public static final Intake intake = new Intake();
+	public static final Hanger hanger = new Hanger();
 	
 	public static final Shooter shooter = new Shooter();
 	public static final GyroRight gyroRight = new GyroRight();
@@ -40,7 +44,11 @@ public class Robot extends IterativeRobot {
 	SendableChooser<Command> chooser = new SendableChooser<>();
 
 	public static boolean visionFlag = true;
-	public static boolean visionTarget = false; //false = gear; true = target;  
+	public static boolean visionTarget = false; //false = gear; true = target; 
+	
+	public static int orientationJoy = 0;
+	
+	public static int autoTimer = 0;
 	
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -56,8 +64,10 @@ public class Robot extends IterativeRobot {
 		CameraServer.getInstance().addServer("10.13.91.3");
 		
 		SmartDashboard.putBoolean("visionTarget", visionTarget);
+		SmartDashboard.putNumber("gyroGain", .65);
 		
 	}
+	
 
 	/**
 	 * This function is called once each time the robot enters Disabled mode.
@@ -87,18 +97,9 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousInit() {
-		autonomousCommand = chooser.getSelected();
+		
+		Robot.driveBase.resetGyro();
 
-		/*
-		 * String autoSelected = SmartDashboard.getString("Auto Selector",
-		 * "Default"); switch(autoSelected) { case "My Auto": autonomousCommand
-		 * = new MyAutoCommand(); break; case "Default Auto": default:
-		 * autonomousCommand = new ExampleCommand(); break; }
-		 */
-
-		// schedule the autonomous command (example)
-		if (autonomousCommand != null)
-			autonomousCommand.start();
 	}
 
 	/**
@@ -106,7 +107,54 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
-		Scheduler.getInstance().run();
+		
+		autoTimer++;
+		
+		if(autoTimer < 75){ //DRIVING FORWARD
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.7, 0);
+		}else if (autoTimer<100){ //TURN TO GEAR
+			Robot.driveBase.setGyroPIDControl(-60);
+		}else if (autoTimer<175){ //DRIVE TO GEAR
+			if(autoTimer == 101){
+				Robot.driveBase.setNoPid();
+			}
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.45, -60);
+		}else if (autoTimer<200){ //DROP GEAR
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+			
+		}else if (autoTimer<230){ //DRIVE BACK
+			Robot.driveBase.gyroMecanumDrive(0, 0, .6, -60);
+		}else if (autoTimer<270){ //TURN TO SHOOT
+			Robot.driveBase.setGyroPIDControl(90);
+		}else if (autoTimer<355){ //DRIVE TO HOPPER
+			if(autoTimer == 271){
+				Robot.driveBase.setNoPid();
+			}
+			
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.5, 90);
+			
+		}else if(autoTimer < 370){ //LET HOPPER EMPTY && INTAKE
+			Robot.driveBase.mecanumDrive(0, .5, 0);
+		}else if(autoTimer < 390){//POSITION FOR SHOOT && RAMP UP
+			Robot.driveBase.mecanumDrive(0, .3, -.3);
+		}else {//SHOOT
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+		}
+		/*
+		if(autoTimer < 200){
+			driveBase.mecanumDrive(0, .5, 0);
+		}else if(autoTimer < 300){
+			driveBase.stop();
+			driveBase.setGyroPIDControl(45);
+			if(autoTimer == 299){
+				driveBase.setNoPid();
+			}
+			
+		}else if(autoTimer < 500){
+			driveBase.mecanumDrive(0, .5, 0);
+		}
+		*/
+		
 	}
 
 	@Override
@@ -122,53 +170,78 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopPeriodic() {
 
-		if (OI.driverB.get() && visionFlag == false) {
+		//DRIVING
+		if (OI.driverLT.get() && visionFlag == false) {
 			gyroVision.execute();
-			System.out.println(202);
-		}else if(OI.driverY.get()) {
+		}else if(OI.driverRT.get()) {
 			gyroStop.execute();
-			System.out.println(101);
 		}else if(!driveBase.getPIDController().isEnabled() && !Robot.gear.active){
-			mecanumDrive.execute();
-			System.out.println(303);
+			mecanumDrive.execute(orientationJoy);
 		}
 		
-		if(!OI.driverB.get() && visionFlag == true){
+		if(!OI.driverLT.get() && visionFlag == true){
 			visionFlag = false;
 		}
 		
-		if(OI.driverJoyL.get()){
+		//GEAR SHIFTING
+		if(OI.driverLB.get() || OI.operatorLB.get()){
 			driveBase.lowGear();
-		}else if(OI.driverJoyR.get()){
+		}else if(OI.driverRB.get() || OI.operatorRB.get()){
 			driveBase.highGear();
 		}
 		
-		driveBase.getAngle();
-		
-		if(OI.driverLB.get()){
-			gear.open();
-		}else if(OI.driverRB.get()){
-			gear.close();
-		}else{
-			gear.stop();
+		//INTAKE
+		if(OI.operatorB.get()){
+			Robot.intake.start();
+		}else if(OI.operatorY.get()){
+			Robot.intake.stop();
 		}
 		
-		if(OI.driverX.get()){
-			Robot.gear.active = true;
-		}else if(OI.driverA.get()){
+		if(OI.operatorJoyL.get()){
+			Robot.intake.hingeOpen();
+		}else if(OI.operatorJoyR.get()){
+			Robot.intake.hingeClose();
+		}
+		
+		//HANGER
+		if(OI.operator.getPOV() == 180){
+			Robot.hanger.lift();
+		}else if(OI.operator.getPOV() == 0){
+			Robot.hanger.halt();
+		}
+		
+		//GEAR SEQUENCE
+		/*
+		if(OI.operatorX.get()){
+			Robot.gear.sequenceStart();
+		}else if(OI.operatorA.get()){
 			Robot.gear.sequenceEject();
 		}
+		*/
 		
 		Robot.gear.sequence();
 		
-		if(OI.driverLT.get()){ //gear
+		//SET WHAT VISION WANTS
+		if(OI.operatorLT.get()){ //gear
 			visionTarget = false;
 			SmartDashboard.putBoolean("visionTarget", visionTarget);
-		}else if(OI.driverRT.get()){ //vision target
+		}else if(OI.operatorRT.get()){ //vision target
 			visionTarget = true;
 			SmartDashboard.putBoolean("visionTarget", visionTarget);
 		}
+		
+		//SET ORIENTATION
+		if(OI.driverA.get()){
+			orientationJoy = 0;
+		}else if(OI.driverB.get()){
+			orientationJoy = 1;
+		}else if(OI.driverX.get()){
+			orientationJoy = 2;
+		}else if(OI.driverY.get()){
+			orientationJoy = 3;
+		}
 
+		driveBase.getAngle();
 	}
 
 	/**

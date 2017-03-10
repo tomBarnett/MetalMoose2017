@@ -1,5 +1,6 @@
 package org.usfirst.frc.team1391.robot.subsystems;
 
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.SPI;
@@ -26,26 +27,22 @@ public class DriveBase extends PIDSubsystem {
 	PIDInput currentInputType;
 
 	// Motors driving front-left mecanum wheel
-	Victor leftFA = new Victor(RobotMap.leftFA);
-	Victor leftFB = new Victor(RobotMap.leftFB);
+	Victor leftF = new Victor(RobotMap.leftF);
 
 	// Motors driving back-left mecanum wheel
-	Victor leftBA = new Victor(RobotMap.leftBA);
-	Victor leftBB = new Victor(RobotMap.leftBB);
+	Victor leftB = new Victor(RobotMap.leftB);
 
 	// Motors driving front-right mecanum wheel
-	Victor rightFA = new Victor(RobotMap.rightFA);
-	Victor rightFB = new Victor(RobotMap.rightFB);
+	Victor rightF = new Victor(RobotMap.rightF);
 
 	// Motors driving back-right mecanum wheel
-	Victor rightBA = new Victor(RobotMap.rightBA);
-	Victor rightBB = new Victor(RobotMap.rightBB);
+	Victor rightB = new Victor(RobotMap.rightB);
 
 	//SOLENOIDS
-	DoubleSolenoid solRightF = new DoubleSolenoid(RobotMap.solRightF[0], RobotMap.solRightF[1]);
-	DoubleSolenoid solRightB = new DoubleSolenoid(RobotMap.solRightB[0], RobotMap.solRightB[1]);
-	DoubleSolenoid solLeftF = new DoubleSolenoid(RobotMap.solLeftF[0], RobotMap.solLeftF[1]);
-	DoubleSolenoid solLeftB = new DoubleSolenoid(RobotMap.solLeftB[0], RobotMap.solLeftB[1]);
+	
+	Compressor c = new Compressor(0);
+	
+	DoubleSolenoid solDrive = new DoubleSolenoid(RobotMap.solDrive[0], RobotMap.solDrive[1]);
 	
 	// Encoder encoderLeftF = new Encoder(RobotMap.encoderLeftF[0],
 	// RobotMap.encoderLeftF[0], false, Encoder.EncodingType.k4X);
@@ -60,6 +57,7 @@ public class DriveBase extends PIDSubsystem {
 	public int first = 1;
 
 	double kToleranceDegrees = 2.0;
+	double gyroGain = 1.2;
 
 	// Initialize your subsystem here
 	public DriveBase() {
@@ -68,6 +66,7 @@ public class DriveBase extends PIDSubsystem {
 		getPIDController().setOutputRange(-1.0, 1.0);
 
 		ahrs = new AHRS(SPI.Port.kMXP);
+		c.setClosedLoopControl(true);
 
 		
 		// encoderLeftF.reset();
@@ -85,48 +84,57 @@ public class DriveBase extends PIDSubsystem {
 		setRightFSpeed(xIn + yIn + rotation);
 		setRightBSpeed(xIn + yIn - rotation);
 	}
-
+	
+	public void gyroMecanumDrive(double xIn, double yIn, double rotation, double targetAngle){
+		
+		gyroGain = SmartDashboard.getNumber("gyroGain", gyroGain);
+		
+		xIn = xIn + gyroGain*((targetAngle - ahrs.getYaw())/180);
+		
+		
+		setLeftFSpeed(xIn - yIn + rotation);
+		setLeftBSpeed(xIn - yIn - rotation);
+		setRightFSpeed(xIn + yIn + rotation );
+		setRightBSpeed(xIn + yIn - rotation);
+		
+		SmartDashboard.putNumber("YAW", ahrs.getYaw());
+		
+	}
+	
 	public void lowGear(){
 		
-		solRightF.set(DoubleSolenoid.Value.kForward);
-		solRightB.set(DoubleSolenoid.Value.kForward);
-		solLeftF.set(DoubleSolenoid.Value.kForward);
-		solLeftB.set(DoubleSolenoid.Value.kForward);
+		solDrive.set(DoubleSolenoid.Value.kForward);
 		
 	}
 	
 	public void highGear(){
 		
-		solRightF.set(DoubleSolenoid.Value.kReverse);
-		solRightB.set(DoubleSolenoid.Value.kReverse);
-		solLeftF.set(DoubleSolenoid.Value.kReverse);
-		solLeftB.set(DoubleSolenoid.Value.kReverse);
+		solDrive.set(DoubleSolenoid.Value.kReverse);
 		
 	}
 	
 	public void motorTest() {
-		leftFA.set(.5);
-		leftFB.set(.5);
+		leftF.set(.5);
+	}
+	
+	public void resetGyro() {
+		ahrs.reset();
 	}
 
 	private void setLeftFSpeed(double speed) {
-		leftFA.setSpeed(speed);
-		leftFB.setSpeed(speed);
+		leftF.setSpeed(speed);
 	}
 
 	private void setLeftBSpeed(double speed) {
-		leftBA.setSpeed(speed);
-		leftBA.setSpeed(speed);
+		leftB.setSpeed(speed);
 	}
 
 	private void setRightFSpeed(double speed) {
-		rightFA.setSpeed(speed);
-		rightFB.setSpeed(speed);
+		rightF.setSpeed(speed);
 	}
 
 	private void setRightBSpeed(double speed) {
-		rightBA.setSpeed(speed);
-		rightBB.setSpeed(speed);
+		rightB.setSpeed(speed);
 	}
 
 	public void stop() {

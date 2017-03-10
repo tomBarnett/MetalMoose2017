@@ -49,8 +49,6 @@ public class OI {
 	
 	//DRIVE CODE
 	
-	public JoystickTrigger whileActive = new JoystickTrigger();
-	
 	
 	
 	// Button button = new JoystickButton(stick, buttonNumber);

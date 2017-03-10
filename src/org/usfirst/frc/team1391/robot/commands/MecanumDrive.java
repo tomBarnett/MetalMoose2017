@@ -12,42 +12,51 @@ import edu.wpi.first.wpilibj.command.Command;
  */
 public class MecanumDrive extends Command {
 
-    public MecanumDrive() {
-        requires(Robot.driveBase);
-    }
+	public MecanumDrive() {
+		requires(Robot.driveBase);
+	}
 
-    // Called just before this Command runs the first time
-    protected void initialize() {
-    }
+	// Called just before this Command runs the first time
+	protected void initialize() {
+	}
 
-    // Called repeatedly when this Command is scheduled to run
-    public void execute() {
-    	double xIn = OI.driver.getAxis(AxisType.kX);
-    	double yIn = OI.driver.getAxis(AxisType.kThrottle);
-    	double zIn = OI.driver.getAxis(AxisType.kZ);
-    	
-    	Robot.driveBase.mecanumDrive(xIn, zIn, yIn);
-    	
-    	System.out.println("001");
-    	System.out.println(xIn);
-    	
-    }
+	// Called repeatedly when this Command is scheduled to run
+	public void execute(int orientation) {
+		double xIn = OI.driver.getAxis(AxisType.kX);
+		double yIn = OI.driver.getAxis(AxisType.kY);
+		double zIn = OI.driver.getAxis(AxisType.kZ);
+		double tIn = OI.driver.getAxis(AxisType.kThrottle);
 
-    // Make this return true when this Command no longer needs to run execute()
-    protected boolean isFinished() {
-        return true;
-    }
+		switch (orientation) { //Gives current heading set by driver
+		case 0:
+			Robot.driveBase.mecanumDrive(xIn, zIn, -tIn); // spin, forward, left
+		case 1:
+			Robot.driveBase.mecanumDrive(xIn, yIn, zIn);
+		case 2:
+			Robot.driveBase.mecanumDrive(yIn, zIn, tIn);
+		case 3:
+			Robot.driveBase.mecanumDrive(xIn, zIn, yIn);
+		default:
+			Robot.driveBase.mecanumDrive(xIn, zIn, tIn);
+		}
 
-    // Called once after isFinished returns true
-    protected void end() {
-    	
-    }
+	}
 
-    // Called when another command which requires one or more of the same
-    // subsystems is scheduled to run
-    protected void interrupted() {
-    	System.out.println("DriveInterruted");
-    	end();
-    	
-    }
+	// Make this return true when this Command no longer needs to run execute()
+	protected boolean isFinished() {
+		return true;
+	}
+
+	// Called once after isFinished returns true
+	protected void end() {
+
+	}
+
+	// Called when another command which requires one or more of the same
+	// subsystems is scheduled to run
+	protected void interrupted() {
+		System.out.println("DriveInterruted");
+		end();
+
+	}
 }
