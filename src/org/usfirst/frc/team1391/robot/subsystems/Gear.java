@@ -37,11 +37,11 @@ public class Gear extends Subsystem {
 	}
 	
 	public void open(){
-		solGear.set(DoubleSolenoid.Value.kForward);
+		solGear.set(DoubleSolenoid.Value.kReverse);
 	}
 	
 	public void close(){
-		solGear.set(DoubleSolenoid.Value.kReverse);
+		solGear.set(DoubleSolenoid.Value.kForward);
 	}
 	
 	public void sequenceStart(){

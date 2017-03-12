@@ -85,6 +85,15 @@ public class DriveBase extends PIDSubsystem {
 		setRightBSpeed(xIn + yIn - rotation);
 	}
 	
+	public void mecanumTeloDrive(double xIn, double yIn, double rotation){
+		
+		setLeftFSpeed(xIn + yIn + rotation);
+		setLeftBSpeed(xIn + yIn - rotation);
+		setRightFSpeed(xIn - yIn + rotation);
+		setRightBSpeed(xIn - yIn - rotation);
+		
+	}
+	
 	public void gyroMecanumDrive(double xIn, double yIn, double rotation, double targetAngle){
 		
 		gyroGain = SmartDashboard.getNumber("gyroGain", gyroGain);
@@ -103,13 +112,13 @@ public class DriveBase extends PIDSubsystem {
 	
 	public void lowGear(){
 		
-		solDrive.set(DoubleSolenoid.Value.kForward);
+		solDrive.set(DoubleSolenoid.Value.kReverse);
 		
 	}
 	
 	public void highGear(){
 		
-		solDrive.set(DoubleSolenoid.Value.kReverse);
+		solDrive.set(DoubleSolenoid.Value.kForward);
 		
 	}
 	

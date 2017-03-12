@@ -2,6 +2,7 @@
 package org.usfirst.frc.team1391.robot;
 
 import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
@@ -50,6 +51,9 @@ public class Robot extends IterativeRobot {
 	
 	public static int autoTimer = 0;
 	
+	public static double shootSpeed = .77;
+	public static int shootTimer = 0; 
+	
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -65,6 +69,7 @@ public class Robot extends IterativeRobot {
 		
 		SmartDashboard.putBoolean("visionTarget", visionTarget);
 		SmartDashboard.putNumber("gyroGain", .65);
+		
 		
 	}
 	
@@ -99,6 +104,8 @@ public class Robot extends IterativeRobot {
 	public void autonomousInit() {
 		
 		Robot.driveBase.resetGyro();
+		Robot.driveBase.lowGear();
+		Robot.gear.close();
 
 	}
 
@@ -110,36 +117,8 @@ public class Robot extends IterativeRobot {
 		
 		autoTimer++;
 		
-		if(autoTimer < 75){ //DRIVING FORWARD
-			Robot.driveBase.gyroMecanumDrive(0, 0, -.7, 0);
-		}else if (autoTimer<100){ //TURN TO GEAR
-			Robot.driveBase.setGyroPIDControl(-60);
-		}else if (autoTimer<175){ //DRIVE TO GEAR
-			if(autoTimer == 101){
-				Robot.driveBase.setNoPid();
-			}
-			Robot.driveBase.gyroMecanumDrive(0, 0, -.45, -60);
-		}else if (autoTimer<200){ //DROP GEAR
-			Robot.driveBase.mecanumDrive(0, 0, 0);
-			
-		}else if (autoTimer<230){ //DRIVE BACK
-			Robot.driveBase.gyroMecanumDrive(0, 0, .6, -60);
-		}else if (autoTimer<270){ //TURN TO SHOOT
-			Robot.driveBase.setGyroPIDControl(90);
-		}else if (autoTimer<355){ //DRIVE TO HOPPER
-			if(autoTimer == 271){
-				Robot.driveBase.setNoPid();
-			}
-			
-			Robot.driveBase.gyroMecanumDrive(0, 0, -.5, 90);
-			
-		}else if(autoTimer < 370){ //LET HOPPER EMPTY && INTAKE
-			Robot.driveBase.mecanumDrive(0, .5, 0);
-		}else if(autoTimer < 390){//POSITION FOR SHOOT && RAMP UP
-			Robot.driveBase.mecanumDrive(0, .3, -.3);
-		}else {//SHOOT
-			Robot.driveBase.mecanumDrive(0, 0, 0);
-		}
+		autoLeft();
+		
 		/*
 		if(autoTimer < 200){
 			driveBase.mecanumDrive(0, .5, 0);
@@ -176,7 +155,7 @@ public class Robot extends IterativeRobot {
 		}else if(OI.driverRT.get()) {
 			gyroStop.execute();
 		}else if(!driveBase.getPIDController().isEnabled() && !Robot.gear.active){
-			mecanumDrive.execute(orientationJoy);
+			mecanumDrive.executeTelo();
 		}
 		
 		if(!OI.driverLT.get() && visionFlag == true){
@@ -193,7 +172,7 @@ public class Robot extends IterativeRobot {
 		//INTAKE
 		if(OI.operatorB.get()){
 			Robot.intake.start();
-		}else if(OI.operatorY.get()){
+		}else {
 			Robot.intake.stop();
 		}
 		
@@ -202,6 +181,28 @@ public class Robot extends IterativeRobot {
 		}else if(OI.operatorJoyR.get()){
 			Robot.intake.hingeClose();
 		}
+		
+		//FEEDER
+		
+		if(OI.operator.getRawAxis(3) > .3){
+			shootTimer++;
+			Robot.shooter.shoot(shootSpeed);
+			if(shootTimer > 80){
+				Robot.shooter.feed();
+			}
+		}else{
+			Robot.shooter.stop();
+			Robot.shooter.shoot(0);
+			shootTimer = 0;
+		}
+		
+		/*
+		if(OI.operator.getRawAxis(1)> .3){
+			Robot.shooter.shoot(shootSpeed);
+		}else{
+			Robot.shooter.shoot(0);
+		}
+		*/
 		
 		//HANGER
 		if(OI.operator.getPOV() == 180){
@@ -220,6 +221,12 @@ public class Robot extends IterativeRobot {
 		*/
 		
 		Robot.gear.sequence();
+		
+		if(OI.operatorA.get()){
+			Robot.gear.open();
+		}else if(OI.operatorX.get()){
+			Robot.gear.close();
+		}
 		
 		//SET WHAT VISION WANTS
 		if(OI.operatorLT.get()){ //gear
@@ -251,5 +258,208 @@ public class Robot extends IterativeRobot {
 	public void testPeriodic() {
 		LiveWindow.run();
 	}
+	
+	public void autoRight(){
+		if(autoTimer < 75){ //DRIVING FORWARD
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.7, 0);
+		}else if (autoTimer<100){ //TURN TO GEAR
+			Robot.driveBase.setGyroPIDControl(-60);
+		}else if (autoTimer<175){ //DRIVE TO GEAR
+			if(autoTimer == 101){
+				Robot.driveBase.setNoPid();
+			}
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.45, -60);
+		}else if (autoTimer<200){ //DROP GEAR
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+			Robot.gear.open();
+			
+		}else if (autoTimer<230){ //DRIVE BACK
+			Robot.driveBase.gyroMecanumDrive(0, 0, .6, -60);
+			if(autoTimer >255){
+				Robot.gear.close();
+			}
+			Robot.shooter.shoot(shootSpeed);
+		}else if (autoTimer<270){ //TURN TO SHOOT
+			Robot.driveBase.setGyroPIDControl(90);
+		}else if (autoTimer<355){ //DRIVE TO HOPPER
+			if(autoTimer == 271){
+				Robot.driveBase.setNoPid();
+			}
+			
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.5, 90);
+			
+		}else if(autoTimer < 370){ //LET HOPPER EMPTY && INTAKE
+			Robot.driveBase.mecanumDrive(0, .5, 0);
+			
+		}else if(autoTimer < 400){//POSITION FOR SHOOT && RAMP UP
+			Robot.driveBase.mecanumDrive(0, -.5, -.3);
+		}else {//SHOOT
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+			Robot.shooter.feed();
+		}
+	}
+	
+	public void autoLeft(){
+		
+		if(autoTimer < 75){ //DRIVING FORWARD
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.7, 0);
+		}else if (autoTimer<100){ //TURN TO GEAR
+			Robot.driveBase.setGyroPIDControl(60);
+		}else if (autoTimer<175){ //DRIVE TO GEAR
+			if(autoTimer == 101){
+				Robot.driveBase.setNoPid();
+			}
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.45, 60);
+		}else if (autoTimer<200){ //DROP GEAR
+			//Robot.gear.open();
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+			
+		}else if (autoTimer<230){ //DRIVE BACK
+			Robot.driveBase.gyroMecanumDrive(0, 0, .6, 60);
+			if(autoTimer >255){
+				//Robot.gear.close();
+			}
+			Robot.shooter.shoot(shootSpeed);
+		}else if (autoTimer<270){ //TURN TO SHOOT
+			Robot.driveBase.setGyroPIDControl(90);
+		}else if (autoTimer<345){ //DRIVE TO HOPPER
+			if(autoTimer == 271){
+				Robot.driveBase.setNoPid();
+			}
+			Robot.intake.start();
+			Robot.driveBase.gyroMecanumDrive(0, 0, .5, 90);
+			
+		}else if(autoTimer < 355){
+			Robot.driveBase.gyroMecanumDrive(0, -.2, .5, 90);
+		}else if(autoTimer < 370){ //LET HOPPER EMPTY && INTAKE
+			Robot.driveBase.mecanumDrive(0, -.7, 0);
+		}else if(autoTimer < 415){//POSITION FOR SHOOT && RAMP UP
+			Robot.driveBase.mecanumDrive(0, -.3, .3);
+		}else {//SHOOT
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+			Robot.shooter.feed();
+		}
+		
+	}
+	
+	public void centerAuto(){
+		
+		if(autoTimer < 75){ //DRIVING FORWARD
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.7, 0);
+		}else if (autoTimer<100){ //DROP GEAR
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+			Robot.gear.open();
+		}else if (autoTimer<120){ //DRIVE BACK
+			Robot.driveBase.gyroMecanumDrive(0, 0, .6, -60);
+		}else if (autoTimer < 135){
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.3, -60);
+		}else {
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+		}
+	}
+	
+	public void baseAuto(){
+		
+		if(autoTimer < 75){ //DRIVING FORWARD
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.7, 0);
+		}else {
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+		}
+		
+	}
 
+	public void autoVisRight(){
+		if(autoTimer < 75){ //DRIVING FORWARD
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.7, 0);
+		}else if (autoTimer<100){ //TURN TO GEAR
+			Robot.driveBase.setGyroPIDControl(-60);
+		}else if (autoTimer<175){ //DRIVE TO GEAR
+			if(autoTimer == 101){
+				Robot.driveBase.setNoPid();
+			}
+			
+			if(SmartDashboard.getNumber("angle", 0) > 5){
+				Robot.driveBase.gyroMecanumDrive(0, 0, -.45, -60);
+			}else if(SmartDashboard.getNumber("angle", 0) < -5){
+				Robot.driveBase.gyroMecanumDrive(0, -.2, -.45, -60);
+			}else{
+				Robot.driveBase.gyroMecanumDrive(0, .2, -.45, -60);
+			}
+			
+		}else if (autoTimer<200){ //DROP GEAR
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+			Robot.gear.open();
+			
+		}else if (autoTimer<230){ //DRIVE BACK
+			Robot.driveBase.gyroMecanumDrive(0, 0, .6, -60);
+			
+			Robot.shooter.shoot(shootSpeed);
+		}else if (autoTimer<270){ //TURN TO SHOOT
+			Robot.driveBase.setGyroPIDControl(90);
+		}else if (autoTimer<355){ //DRIVE TO HOPPER
+			if(autoTimer == 271){
+				Robot.driveBase.setNoPid();
+			}
+			Robot.gear.close();
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.5, 90);
+			
+		}else if(autoTimer < 370){ //LET HOPPER EMPTY && INTAKE
+			Robot.driveBase.mecanumDrive(0, .5, 0);
+			
+		}else if(autoTimer < 390){//POSITION FOR SHOOT && RAMP UP
+			Robot.driveBase.mecanumDrive(0, .3, -.3);
+		}else {//SHOOT
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+			Robot.shooter.feed();
+		}
+	}
+	
+public void autoVisLeft(){
+		
+		if(autoTimer < 75){ //DRIVING FORWARD
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.7, 0);
+		}else if (autoTimer<100){ //TURN TO GEAR
+			Robot.driveBase.setGyroPIDControl(60);
+		}else if (autoTimer<175){ //DRIVE TO GEAR
+			if(autoTimer == 101){
+				Robot.driveBase.setNoPid();
+			}
+			
+			if(SmartDashboard.getNumber("angle", 0) > 5){
+				Robot.driveBase.gyroMecanumDrive(0, 0, -.45, 60);
+			}else if(SmartDashboard.getNumber("angle", 0) < -5){
+				Robot.driveBase.gyroMecanumDrive(0, -.2, -.45, 60);
+			}else{
+				Robot.driveBase.gyroMecanumDrive(0, .2, -.45, 60);
+			}
+			
+		}else if (autoTimer<200){ //DROP GEAR
+			Robot.gear.open();
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+			
+		}else if (autoTimer<230){ //DRIVE BACK
+			Robot.driveBase.gyroMecanumDrive(0, 0, .6, 60);
+			if(autoTimer >255){
+				Robot.gear.close();
+			}
+			Robot.shooter.shoot(shootSpeed);
+		}else if (autoTimer<270){ //TURN TO SHOOT
+			Robot.driveBase.setGyroPIDControl(-90);
+		}else if (autoTimer<355){ //DRIVE TO HOPPER
+			if(autoTimer == 271){
+				Robot.driveBase.setNoPid();
+			}
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.5, -90);
+			
+		}else if(autoTimer < 370){ //LET HOPPER EMPTY && INTAKE
+			Robot.driveBase.mecanumDrive(0, -.5, 0);
+		}else if(autoTimer < 390){//POSITION FOR SHOOT && RAMP UP
+			Robot.driveBase.mecanumDrive(0, -.3, -.3);
+		}else {//SHOOT
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+			Robot.shooter.feed();
+		}
+		
+	}
+	
 }

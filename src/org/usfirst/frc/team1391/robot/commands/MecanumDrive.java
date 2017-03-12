@@ -29,7 +29,7 @@ public class MecanumDrive extends Command {
 
 		switch (orientation) { //Gives current heading set by driver
 		case 0:
-			Robot.driveBase.mecanumDrive(xIn, zIn, -tIn); // spin, forward, left
+			Robot.driveBase.mecanumDrive(xIn, zIn, tIn); // spin, forward, left
 		case 1:
 			Robot.driveBase.mecanumDrive(xIn, yIn, zIn);
 		case 2:
@@ -40,6 +40,15 @@ public class MecanumDrive extends Command {
 			Robot.driveBase.mecanumDrive(xIn, zIn, tIn);
 		}
 
+	}
+	
+	public void executeTelo(){
+		double xIn = OI.driver.getAxis(AxisType.kX);
+		double yIn = OI.driver.getAxis(AxisType.kY);
+		double zIn = OI.driver.getAxis(AxisType.kZ);
+		double tIn = OI.driver.getAxis(AxisType.kThrottle);
+		
+		Robot.driveBase.mecanumTeloDrive(xIn, zIn, tIn); // spin, forward, left
 	}
 
 	// Make this return true when this Command no longer needs to run execute()

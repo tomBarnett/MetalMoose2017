@@ -20,7 +20,7 @@ public class Intake extends Subsystem {
     }
     
     public void start(){
-    	intakeMotor.set(1);
+    	intakeMotor.set(-1);
     }
     
     public void stop(){
