@@ -15,9 +15,10 @@ public class RobotMap {
 	public static int rightB = 1;
 	
 	public static int shooterMotor = 8;
-	public static int feedMotor = 9;
+	public static int feedMotor = 4;
 	
-	public static int intakeMotor = 4; 
+	public static int intakeMotor = 5;
+	public static int liftMotor = 9;
 	
 	public static int hookMotorL = 6;
 	public static int hookMotorR = 7; 
@@ -27,5 +28,7 @@ public class RobotMap {
 	public static int solDrive[] = {0, 1};
 	public static int solIntake[] = {2, 3};
 	public static int solGear[] = {6, 7};
+	
+	public static int gearLimit = 9;
 	
 }

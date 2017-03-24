@@ -46,6 +46,7 @@ public class Robot extends IterativeRobot {
 
 	public static boolean visionFlag = true;
 	public static boolean visionTarget = false; //false = gear; true = target; 
+	public static boolean visionSeen = false;
 	
 	public static int orientationJoy = 0;
 	
@@ -53,6 +54,8 @@ public class Robot extends IterativeRobot {
 	
 	public static double shootSpeed = .77;
 	public static int shootTimer = 0; 
+	
+	public static boolean outtakeFlag = false;
 	
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -154,7 +157,7 @@ public class Robot extends IterativeRobot {
 			gyroVision.execute();
 		}else if(OI.driverRT.get()) {
 			gyroStop.execute();
-		}else if(!driveBase.getPIDController().isEnabled() && !Robot.gear.active){
+		}else if(!driveBase.getPIDController().isEnabled() && !Robot.gear.active && !outtakeFlag){
 			mecanumDrive.executeTelo();
 		}
 		
@@ -171,15 +174,27 @@ public class Robot extends IterativeRobot {
 		
 		//INTAKE
 		if(OI.operatorB.get()){
-			Robot.intake.start();
-		}else {
+			Robot.intake.intake();
+		}else if(OI.operatorY.get()){
+			outtakeFlag = true;
+			Robot.intake.outtakeMethod();
+		}else{
+			outtakeFlag = false;
 			Robot.intake.stop();
 		}
+		
+		Robot.intake.liftMethod();
 		
 		if(OI.operatorJoyL.get()){
 			Robot.intake.hingeOpen();
 		}else if(OI.operatorJoyR.get()){
 			Robot.intake.hingeClose();
+		}
+		
+		if(OI.operator.getRawAxis(1) > .25){
+			Robot.intake.lift(OI.operator.getRawAxis(1));
+		}else if(OI.operator.getRawAxis(1) < -.25){
+			Robot.intake.lift(OI.operator.getRawAxis(1));
 		}
 		
 		//FEEDER
@@ -326,7 +341,7 @@ public class Robot extends IterativeRobot {
 			if(autoTimer == 271){
 				Robot.driveBase.setNoPid();
 			}
-			Robot.intake.start();
+			
 			Robot.driveBase.gyroMecanumDrive(0, 0, .5, 90);
 			
 		}else if(autoTimer < 355){
@@ -378,6 +393,10 @@ public class Robot extends IterativeRobot {
 				Robot.driveBase.setNoPid();
 			}
 			
+			if(SmartDashboard.getBoolean("targetInFrame", false)){
+				visionSeen = true;
+			}
+			
 			if(SmartDashboard.getNumber("angle", 0) > 5){
 				Robot.driveBase.gyroMecanumDrive(0, 0, -.45, -60);
 			}else if(SmartDashboard.getNumber("angle", 0) < -5){
@@ -388,7 +407,10 @@ public class Robot extends IterativeRobot {
 			
 		}else if (autoTimer<200){ //DROP GEAR
 			Robot.driveBase.mecanumDrive(0, 0, 0);
-			Robot.gear.open();
+			
+			if(visionSeen){
+				Robot.gear.open();
+			}
 			
 		}else if (autoTimer<230){ //DRIVE BACK
 			Robot.driveBase.gyroMecanumDrive(0, 0, .6, -60);
