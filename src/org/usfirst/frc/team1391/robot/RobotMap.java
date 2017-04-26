@@ -26,7 +26,7 @@ public class RobotMap {
 	public static int shooterEncoder[] = {0, 1};
 	
 	public static int solDrive[] = {0, 1};
-	public static int solIntake[] = {2, 3};
+	public static int solHopperDropper[] = {2, 3};
 	public static int solGear[] = {6, 7};
 	
 	public static int gearLimit = 9;

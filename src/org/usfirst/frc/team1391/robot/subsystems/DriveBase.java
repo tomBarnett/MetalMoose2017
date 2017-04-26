@@ -50,14 +50,14 @@ public class DriveBase extends PIDSubsystem {
 	AHRS ahrs;
 
 	// PID control variables
-	public static double gyroP = 0.045;
-	public static double gyroI = 0.003;
+	public static double gyroP = 0.05;
+	public static double gyroI = 0.0001;
 	public static double gyroD = 0.00;
 	// double kF = 0.00;
 	public int first = 1;
 
 	double kToleranceDegrees = 2.0;
-	double gyroGain = 1.2;
+	double gyroGain = 3;
 
 	// Initialize your subsystem here
 	public DriveBase() {
@@ -96,7 +96,7 @@ public class DriveBase extends PIDSubsystem {
 	
 	public void gyroMecanumDrive(double xIn, double yIn, double rotation, double targetAngle){
 		
-		gyroGain = SmartDashboard.getNumber("gyroGain", gyroGain);
+		//gyroGain = SmartDashboard.getNumber("gyroGain", gyroGain);
 		
 		xIn = xIn + gyroGain*((targetAngle - ahrs.getYaw())/180);
 		
@@ -156,15 +156,15 @@ public class DriveBase extends PIDSubsystem {
 	public double getAngle(){
 		if(first == 1){
 			first = 0;
-			SmartDashboard.putNumber("gyroP", gyroP);
-			SmartDashboard.putNumber("gyroI", gyroI);
-			SmartDashboard.putNumber("gyroD", gyroD);
+			//SmartDashboard.putNumber("gyroP", gyroP);
+			//SmartDashboard.putNumber("gyroI", gyroI);
+			//SmartDashboard.putNumber("gyroD", gyroD);
 		}
-		gyroP = SmartDashboard.getNumber("gyroP", gyroP);
-		gyroI = SmartDashboard.getNumber("gyroI", gyroI);
-		gyroD = SmartDashboard.getNumber("gyroD", gyroD);
+		//gyroP = SmartDashboard.getNumber("gyroP", gyroP);
+		//gyroI = SmartDashboard.getNumber("gyroI", gyroI);
+		//gyroD = SmartDashboard.getNumber("gyroD", gyroD);
 		getPIDController().setPID(gyroP, gyroI, gyroD);
-		SmartDashboard.putNumber("YAW", ahrs.getYaw());
+		//SmartDashboard.putNumber("YAW", ahrs.getYaw());
 		return ahrs.getYaw();
 		
 	}
@@ -190,7 +190,7 @@ public class DriveBase extends PIDSubsystem {
 			getPIDController().setSetpoint(setpoint);
 		
 
-		SmartDashboard.putNumber("YAW", ahrs.getYaw());
+		//SmartDashboard.putNumber("YAW", ahrs.getYaw());
 
 		if (getPIDController().onTarget()) {
 			setNoPid();
@@ -218,7 +218,7 @@ public class DriveBase extends PIDSubsystem {
 			getPIDController().setSetpoint(setpoint);
 		}
 
-		SmartDashboard.putNumber("YAW", ahrs.getYaw());
+		//SmartDashboard.putNumber("YAW", ahrs.getYaw());
 
 		if (getPIDController().onTarget()) {
 			setNoPid();

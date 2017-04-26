@@ -42,11 +42,25 @@ public class MecanumDrive extends Command {
 
 	}
 	
-	public void executeTelo(){
+	public void executeTelo(boolean orient){
 		double xIn = OI.driver.getAxis(AxisType.kX);
 		double yIn = OI.driver.getAxis(AxisType.kY);
 		double zIn = OI.driver.getAxis(AxisType.kZ);
 		double tIn = OI.driver.getAxis(AxisType.kThrottle);
+		
+		if (orient){
+			tIn = -tIn;
+			zIn = -zIn;
+		}
+		/*
+		 
+		if(zIn < .2 && z > -.2){
+			zIn = 0; 
+		}
+		 
+		 */
+		
+		
 		
 		Robot.driveBase.mecanumTeloDrive(xIn, zIn, tIn); // spin, forward, left
 	}

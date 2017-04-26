@@ -33,7 +33,7 @@ public class Robot extends IterativeRobot {
 	public static final Gear gear = new Gear();
 	public static final Intake intake = new Intake();
 	public static final Hanger hanger = new Hanger();
-	
+
 	public static final Shooter shooter = new Shooter();
 	public static final GyroRight gyroRight = new GyroRight();
 	public static final GyroVision gyroVision = new GyroVision();
@@ -45,18 +45,25 @@ public class Robot extends IterativeRobot {
 	SendableChooser<Command> chooser = new SendableChooser<>();
 
 	public static boolean visionFlag = true;
-	public static boolean visionTarget = false; //false = gear; true = target; 
+	public static boolean visionTarget = false; // false = gear; true = target;
 	public static boolean visionSeen = false;
-	
+
 	public static int orientationJoy = 0;
-	
+	public static boolean orient = true;
+
 	public static int autoTimer = 0;
-	
-	public static double shootSpeed = .77;
-	public static int shootTimer = 0; 
-	
+	public static int delayTimer = 0;
+
+	public static double shootSpeed = .725;
+	public static int shootTimer = 0;
+
 	public static boolean outtakeFlag = false;
-	
+	public static boolean gearLiftFlag = false;
+	public static int gearLiftCount = 0;
+	public static boolean headState = false; // false == down
+
+	public static double autoChoice = 0;
+
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -65,17 +72,17 @@ public class Robot extends IterativeRobot {
 	public void robotInit() {
 		oi = new OI();
 		// chooser.addObject("My Auto", new MyAutoCommand());
-		SmartDashboard.putData("Auto mode", chooser);
-		
-		CameraServer.getInstance().addAxisCamera("10.13.91.3");
-		CameraServer.getInstance().addServer("10.13.91.3");
-		
+		// SmartDashboard.putData("Auto mode", chooser);
+
+		// CameraServer.getInstance().addAxisCamera("10.13.91.3");
+		// CameraServer.getInstance().addServer("10.13.91.3");
+
 		SmartDashboard.putBoolean("visionTarget", visionTarget);
-		SmartDashboard.putNumber("gyroGain", .65);
-		
-		
+		SmartDashboard.putNumber("gyroGain", .3);
+
+		SmartDashboard.putNumber("autoChoice", autoChoice);
+
 	}
-	
 
 	/**
 	 * This function is called once each time the robot enters Disabled mode.
@@ -105,10 +112,11 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousInit() {
-		
+
 		Robot.driveBase.resetGyro();
 		Robot.driveBase.lowGear();
 		Robot.gear.close();
+		autoChoice = SmartDashboard.getNumber("autoChoice", autoChoice);
 
 	}
 
@@ -117,30 +125,46 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
-		
+
+		Robot.intake.liftMethod();
+
 		autoTimer++;
-		
-		autoLeft();
-		
-		/*
-		if(autoTimer < 200){
-			driveBase.mecanumDrive(0, .5, 0);
-		}else if(autoTimer < 300){
-			driveBase.stop();
-			driveBase.setGyroPIDControl(45);
-			if(autoTimer == 299){
-				driveBase.setNoPid();
-			}
-			
-		}else if(autoTimer < 500){
-			driveBase.mecanumDrive(0, .5, 0);
+
+		if (autoChoice == 0) {
+			autoVisRight();
+		} else if (autoChoice == 1) {
+			autoVisLeft();
+		} else if (autoChoice == 2) {
+			autoVisCenterGround();
+		} else if (autoChoice == 3) {
+			autoVisRightGround();
+		} else if (autoChoice == 4) {
+			autoVisLeftGround();
+		} else if (autoChoice == 5) {
+			twist();
+		} else {
+			centerAuto();
 		}
-		*/
-		
+		// autoVisRightShoot();
+
+		// visTester();
+
+		/*
+		 * if(autoTimer < 200){ driveBase.mecanumDrive(0, .5, 0); }else
+		 * if(autoTimer < 300){ driveBase.stop();
+		 * driveBase.setGyroPIDControl(45); if(autoTimer == 299){
+		 * driveBase.setNoPid(); }
+		 * 
+		 * }else if(autoTimer < 500){ driveBase.mecanumDrive(0, .5, 0); }
+		 */
+
 	}
 
 	@Override
 	public void teleopInit() {
+
+		gear.hopperClose();
+		Robot.driveBase.setNoPid();
 
 		if (autonomousCommand != null)
 			autonomousCommand.cancel();
@@ -152,115 +176,165 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopPeriodic() {
 
-		//DRIVING
-		if (OI.driverLT.get() && visionFlag == false) {
-			gyroVision.execute();
-		}else if(OI.driverRT.get()) {
-			gyroStop.execute();
-		}else if(!driveBase.getPIDController().isEnabled() && !Robot.gear.active && !outtakeFlag){
-			mecanumDrive.executeTelo();
+		// DRIVING
+		/*
+		 * if (OI.driverLT.get() && visionFlag == false) { gyroVision.execute();
+		 * } else if (OI.driverRT.get()) { gyroStop.execute(); }
+		 */
+
+		if (!driveBase.getPIDController().isEnabled()) { //&& !Robot.gear.active
+			mecanumDrive.executeTelo(orient);
 		}
-		
-		if(!OI.driverLT.get() && visionFlag == true){
+
+		if (!OI.driverLT.get() && visionFlag == true) {
 			visionFlag = false;
 		}
-		
-		//GEAR SHIFTING
-		if(OI.driverLB.get() || OI.operatorLB.get()){
+
+		// GEAR SHIFTING
+		if (OI.driverLB.get()) {
 			driveBase.lowGear();
-		}else if(OI.driverRB.get() || OI.operatorRB.get()){
+		} else if (OI.driverRB.get()) {
 			driveBase.highGear();
 		}
-		
-		//INTAKE
-		if(OI.operatorB.get()){
+
+		// INTAKE
+		if (OI.operatorLT.get() || OI.driverRT.get()) {
 			Robot.intake.intake();
-		}else if(OI.operatorY.get()){
+			Robot.intake.lift(.35);
+			gearLiftFlag = false;
+		} else if (OI.operatorRT.get() || OI.driverLT.get()) {
 			outtakeFlag = true;
 			Robot.intake.outtakeMethod();
-		}else{
-			outtakeFlag = false;
+			gearLiftFlag = false;
+		} else if (OI.operator.getRawAxis(1) > .25) {
+			Robot.intake.lift(OI.operator.getRawAxis(1));
+			gearLiftFlag = false;
+		} else if (OI.operator.getRawAxis(1) < -.25) {
+			Robot.intake.lift(OI.operator.getRawAxis(1));
+			gearLiftFlag = false;
+		} else if (OI.operator.getRawAxis(0) > .4) { // ball spit
+			Robot.intake.outtake();
+		} else if (OI.operatorLB.get()) { // down
+			headState = false;
+
+			gearLiftFlag = false;
 			Robot.intake.stop();
+			Robot.intake.lift(.15);
+
+		} else if (OI.operatorRB.get()) { // up
+			headState = true;
+
+			if (!gearLiftFlag) {
+				gearLiftFlag = true;
+				gearLiftCount = 0;
+			}
+
+			Robot.intake.stop();
+			outtakeFlag = false;
+			gearLiftCount++;
+
+			if (gearLiftCount < 100) {
+				Robot.intake.lift(-.40);
+			} else {
+				Robot.intake.lift(-.3);
+
+			}
+		} else { // lift state
+
+			if (headState) {
+				if (!gearLiftFlag) {
+					gearLiftFlag = true;
+					gearLiftCount = 0;
+				}
+
+				Robot.intake.intakeHold();
+				outtakeFlag = false;
+				gearLiftCount++;
+
+				if (gearLiftCount < 100) {
+					Robot.intake.lift(-.40);
+				} else {
+					Robot.intake.lift(-.25);
+
+				}
+			} else { // default
+				gearLiftFlag = false;
+				Robot.intake.stop();
+				Robot.intake.lift(.15);
+			}
 		}
-		
-		Robot.intake.liftMethod();
-		
-		if(OI.operatorJoyL.get()){
+
+		Robot.intake.gearCheck();
+
+		if (OI.operatorJoyL.get()) {
 			Robot.intake.hingeOpen();
-		}else if(OI.operatorJoyR.get()){
+		} else if (OI.operatorJoyR.get()) {
 			Robot.intake.hingeClose();
 		}
-		
-		if(OI.operator.getRawAxis(1) > .25){
-			Robot.intake.lift(OI.operator.getRawAxis(1));
-		}else if(OI.operator.getRawAxis(1) < -.25){
-			Robot.intake.lift(OI.operator.getRawAxis(1));
-		}
-		
-		//FEEDER
-		
-		if(OI.operator.getRawAxis(3) > .3){
+
+		// FEEDER
+
+		if (OI.operator.getRawAxis(3) > .3) {
 			shootTimer++;
 			Robot.shooter.shoot(shootSpeed);
-			if(shootTimer > 80){
+			if (shootTimer > 80) {
 				Robot.shooter.feed();
 			}
-		}else{
+		} else {
 			Robot.shooter.stop();
 			Robot.shooter.shoot(0);
 			shootTimer = 0;
 		}
-		
+
 		/*
-		if(OI.operator.getRawAxis(1)> .3){
-			Robot.shooter.shoot(shootSpeed);
-		}else{
-			Robot.shooter.shoot(0);
-		}
-		*/
-		
-		//HANGER
-		if(OI.operator.getPOV() == 180){
+		 * if(OI.operator.getRawAxis(1)> .3){ Robot.shooter.shoot(shootSpeed);
+		 * }else{ Robot.shooter.shoot(0); }
+		 */
+
+		// HANGER
+		if (OI.operator.getPOV() == 180) {
 			Robot.hanger.lift();
-		}else if(OI.operator.getPOV() == 0){
+		} else {
 			Robot.hanger.halt();
 		}
-		
-		//GEAR SEQUENCE
+
+		// GEAR SEQUENCE
 		/*
-		if(OI.operatorX.get()){
-			Robot.gear.sequenceStart();
-		}else if(OI.operatorA.get()){
-			Robot.gear.sequenceEject();
-		}
-		*/
-		
+		 * if(OI.operatorX.get()){ Robot.gear.sequenceStart(); }else
+		 * if(OI.operatorA.get()){ Robot.gear.sequenceEject(); }
+		 */
+
 		Robot.gear.sequence();
-		
-		if(OI.operatorA.get()){
+
+		if (OI.operatorA.get()) {
 			Robot.gear.open();
-		}else if(OI.operatorX.get()){
+		} else if (OI.operatorX.get()) {
 			Robot.gear.close();
 		}
-		
-		//SET WHAT VISION WANTS
-		if(OI.operatorLT.get()){ //gear
-			visionTarget = false;
-			SmartDashboard.putBoolean("visionTarget", visionTarget);
-		}else if(OI.operatorRT.get()){ //vision target
-			visionTarget = true;
-			SmartDashboard.putBoolean("visionTarget", visionTarget);
+
+		if (OI.operatorB.get()) {
+			Robot.gear.hopperOpen();
+		} else if (OI.operatorY.get()) {
+			Robot.gear.hopperClose();
 		}
-		
-		//SET ORIENTATION
-		if(OI.driverA.get()){
-			orientationJoy = 0;
-		}else if(OI.driverB.get()){
+
+		// SET WHAT VISION WANTS
+		/*
+		 * if (OI.operatorLT.get()) { // gear visionTarget = false;
+		 * SmartDashboard.putBoolean("visionTarget", visionTarget); } else if
+		 * (OI.operatorRT.get()) { // vision target visionTarget = true;
+		 * SmartDashboard.putBoolean("visionTarget", visionTarget); }
+		 */
+
+		// SET ORIENTATION
+		if (OI.driverA.get()) {
+			orient = true;
+		} else if (OI.driverB.get()) {
 			orientationJoy = 1;
-		}else if(OI.driverX.get()){
+		} else if (OI.driverX.get()) {
 			orientationJoy = 2;
-		}else if(OI.driverY.get()){
-			orientationJoy = 3;
+		} else if (OI.driverY.get()) {
+			orient = false;
 		}
 
 		driveBase.getAngle();
@@ -273,215 +347,590 @@ public class Robot extends IterativeRobot {
 	public void testPeriodic() {
 		LiveWindow.run();
 	}
-	
-	public void autoRight(){
-		if(autoTimer < 75){ //DRIVING FORWARD
+
+	public void autoRight() {
+		if (autoTimer < 75) { // DRIVING FORWARD
 			Robot.driveBase.gyroMecanumDrive(0, 0, -.7, 0);
-		}else if (autoTimer<100){ //TURN TO GEAR
+		} else if (autoTimer < 100) { // TURN TO GEAR
 			Robot.driveBase.setGyroPIDControl(-60);
-		}else if (autoTimer<175){ //DRIVE TO GEAR
-			if(autoTimer == 101){
+		} else if (autoTimer < 175) { // DRIVE TO GEAR
+			if (autoTimer == 101) {
 				Robot.driveBase.setNoPid();
 			}
 			Robot.driveBase.gyroMecanumDrive(0, 0, -.45, -60);
-		}else if (autoTimer<200){ //DROP GEAR
+		} else if (autoTimer < 200) { // DROP GEAR
 			Robot.driveBase.mecanumDrive(0, 0, 0);
 			Robot.gear.open();
-			
-		}else if (autoTimer<230){ //DRIVE BACK
+
+		} else if (autoTimer < 230) { // DRIVE BACK
 			Robot.driveBase.gyroMecanumDrive(0, 0, .6, -60);
-			if(autoTimer >255){
+			if (autoTimer > 255) {
 				Robot.gear.close();
 			}
 			Robot.shooter.shoot(shootSpeed);
-		}else if (autoTimer<270){ //TURN TO SHOOT
+		} else if (autoTimer < 270) { // TURN TO SHOOT
 			Robot.driveBase.setGyroPIDControl(90);
-		}else if (autoTimer<355){ //DRIVE TO HOPPER
-			if(autoTimer == 271){
+		} else if (autoTimer < 355) { // DRIVE TO HOPPER
+			if (autoTimer == 271) {
 				Robot.driveBase.setNoPid();
 			}
-			
+
 			Robot.driveBase.gyroMecanumDrive(0, 0, -.5, 90);
-			
-		}else if(autoTimer < 370){ //LET HOPPER EMPTY && INTAKE
+
+		} else if (autoTimer < 370) { // LET HOPPER EMPTY && INTAKE
 			Robot.driveBase.mecanumDrive(0, .5, 0);
-			
-		}else if(autoTimer < 400){//POSITION FOR SHOOT && RAMP UP
+
+		} else if (autoTimer < 400) {// POSITION FOR SHOOT && RAMP UP
 			Robot.driveBase.mecanumDrive(0, -.5, -.3);
-		}else {//SHOOT
+		} else {// SHOOT
 			Robot.driveBase.mecanumDrive(0, 0, 0);
 			Robot.shooter.feed();
 		}
 	}
-	
-	public void autoLeft(){
-		
-		if(autoTimer < 75){ //DRIVING FORWARD
+
+	public void autoLeft() {
+
+		if (autoTimer < 75) { // DRIVING FORWARD
 			Robot.driveBase.gyroMecanumDrive(0, 0, -.7, 0);
-		}else if (autoTimer<100){ //TURN TO GEAR
+		} else if (autoTimer < 100) { // TURN TO GEAR
 			Robot.driveBase.setGyroPIDControl(60);
-		}else if (autoTimer<175){ //DRIVE TO GEAR
-			if(autoTimer == 101){
+		} else if (autoTimer < 175) { // DRIVE TO GEAR
+			if (autoTimer == 101) {
 				Robot.driveBase.setNoPid();
 			}
 			Robot.driveBase.gyroMecanumDrive(0, 0, -.45, 60);
-		}else if (autoTimer<200){ //DROP GEAR
-			//Robot.gear.open();
+		} else if (autoTimer < 200) { // DROP GEAR
+			Robot.gear.open();
 			Robot.driveBase.mecanumDrive(0, 0, 0);
-			
-		}else if (autoTimer<230){ //DRIVE BACK
+
+		} else if (autoTimer < 230) { // DRIVE BACK
 			Robot.driveBase.gyroMecanumDrive(0, 0, .6, 60);
-			if(autoTimer >255){
-				//Robot.gear.close();
+			if (autoTimer > 255) {
+				// Robot.gear.close();
 			}
 			Robot.shooter.shoot(shootSpeed);
-		}else if (autoTimer<270){ //TURN TO SHOOT
+		} else if (autoTimer < 270) { // TURN TO SHOOT
 			Robot.driveBase.setGyroPIDControl(90);
-		}else if (autoTimer<345){ //DRIVE TO HOPPER
-			if(autoTimer == 271){
+		} else if (autoTimer < 345) { // DRIVE TO HOPPER
+			if (autoTimer == 271) {
 				Robot.driveBase.setNoPid();
 			}
-			
+
 			Robot.driveBase.gyroMecanumDrive(0, 0, .5, 90);
-			
-		}else if(autoTimer < 355){
+
+		} else if (autoTimer < 355) {
 			Robot.driveBase.gyroMecanumDrive(0, -.2, .5, 90);
-		}else if(autoTimer < 370){ //LET HOPPER EMPTY && INTAKE
+		} else if (autoTimer < 370) { // LET HOPPER EMPTY && INTAKE
 			Robot.driveBase.mecanumDrive(0, -.7, 0);
-		}else if(autoTimer < 415){//POSITION FOR SHOOT && RAMP UP
+		} else if (autoTimer < 415) {// POSITION FOR SHOOT && RAMP UP
 			Robot.driveBase.mecanumDrive(0, -.3, .3);
-		}else {//SHOOT
+		} else {// SHOOT
 			Robot.driveBase.mecanumDrive(0, 0, 0);
 			Robot.shooter.feed();
 		}
-		
-	}
-	
-	public void centerAuto(){
-		
-		if(autoTimer < 75){ //DRIVING FORWARD
-			Robot.driveBase.gyroMecanumDrive(0, 0, -.7, 0);
-		}else if (autoTimer<100){ //DROP GEAR
-			Robot.driveBase.mecanumDrive(0, 0, 0);
-			Robot.gear.open();
-		}else if (autoTimer<120){ //DRIVE BACK
-			Robot.driveBase.gyroMecanumDrive(0, 0, .6, -60);
-		}else if (autoTimer < 135){
-			Robot.driveBase.gyroMecanumDrive(0, 0, -.3, -60);
-		}else {
-			Robot.driveBase.mecanumDrive(0, 0, 0);
-		}
-	}
-	
-	public void baseAuto(){
-		
-		if(autoTimer < 75){ //DRIVING FORWARD
-			Robot.driveBase.gyroMecanumDrive(0, 0, -.7, 0);
-		}else {
-			Robot.driveBase.mecanumDrive(0, 0, 0);
-		}
-		
+
 	}
 
-	public void autoVisRight(){
-		if(autoTimer < 75){ //DRIVING FORWARD
+	public void centerAuto() {
+
+		if (autoTimer < 75) { // DRIVING FORWARD
 			Robot.driveBase.gyroMecanumDrive(0, 0, -.7, 0);
-		}else if (autoTimer<100){ //TURN TO GEAR
+		} else if (autoTimer < 100) { // DROP GEAR
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+			Robot.gear.open();
+		} else if (autoTimer < 120) { // DRIVE BACK
+			Robot.driveBase.gyroMecanumDrive(0, 0, .6, 0);
+		} else if (autoTimer < 135) {
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.3, 0);
+		} else {
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+		}
+	}
+
+	public void baseAuto() {
+
+		if (autoTimer < 75) { // DRIVING FORWARD
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.7, 0);
+		} else {
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+		}
+
+	}
+
+	public void autoVisRight() {
+		if (autoTimer < 71) { // DRIVING FORWARD
+			Robot.gear.hopperOpen();
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.68, 0);
+		} else if (autoTimer < 125) { // TURN TO GEAR
 			Robot.driveBase.setGyroPIDControl(-60);
-		}else if (autoTimer<175){ //DRIVE TO GEAR
-			if(autoTimer == 101){
+		} else if (autoTimer < 200) { // DRIVE TO GEAR
+			if (autoTimer == 126) {
 				Robot.driveBase.setNoPid();
 			}
-			
-			if(SmartDashboard.getBoolean("targetInFrame", false)){
+
+			if (SmartDashboard.getBoolean("targetInFrame", false)) {
 				visionSeen = true;
 			}
-			
-			if(SmartDashboard.getNumber("angle", 0) > 5){
+
+			double angle = SmartDashboard.getNumber("angle", 0);
+
+			if (angle > 4) {
 				Robot.driveBase.gyroMecanumDrive(0, 0, -.45, -60);
-			}else if(SmartDashboard.getNumber("angle", 0) < -5){
-				Robot.driveBase.gyroMecanumDrive(0, -.2, -.45, -60);
-			}else{
-				Robot.driveBase.gyroMecanumDrive(0, .2, -.45, -60);
+			} else if (angle < -4) {
+				Robot.driveBase.gyroMecanumDrive(0, 0, -.45, -60);
+			} else {
+				Robot.driveBase.gyroMecanumDrive(0, 0, -.45, -60);
 			}
-			
-		}else if (autoTimer<200){ //DROP GEAR
+
+		} else if (autoTimer < 250) { // DROP GEAR
 			Robot.driveBase.mecanumDrive(0, 0, 0);
-			
-			if(visionSeen){
-				Robot.gear.open();
-			}
-			
-		}else if (autoTimer<230){ //DRIVE BACK
+
+			Robot.gear.open();
+			Robot.shooter.encoderShoot(shootSpeed);
+			// if (visionSeen) {
+
+			// }
+
+		} else if (autoTimer < 275) { // DRIVE BACK
 			Robot.driveBase.gyroMecanumDrive(0, 0, .6, -60);
-			
-			Robot.shooter.shoot(shootSpeed);
-		}else if (autoTimer<270){ //TURN TO SHOOT
+					//took out ramp up
+		} else if (autoTimer < 315) { // TURN TO SHOOT
 			Robot.driveBase.setGyroPIDControl(90);
-		}else if (autoTimer<355){ //DRIVE TO HOPPER
-			if(autoTimer == 271){
+
+
+		} else if (autoTimer < 400) { // DRIVE TO HOPPER
+			if (autoTimer == 316) {
 				Robot.driveBase.setNoPid();
 			}
 			Robot.gear.close();
 			Robot.driveBase.gyroMecanumDrive(0, 0, -.5, 90);
-			
-		}else if(autoTimer < 370){ //LET HOPPER EMPTY && INTAKE
-			Robot.driveBase.mecanumDrive(0, .5, 0);
-			
-		}else if(autoTimer < 390){//POSITION FOR SHOOT && RAMP UP
-			Robot.driveBase.mecanumDrive(0, .3, -.3);
-		}else {//SHOOT
-			Robot.driveBase.mecanumDrive(0, 0, 0);
+
+			Robot.shooter.encoderShoot(shootSpeed);
+
+		} else if (autoTimer < 460) {// POSITION FOR SHOOT && RAMP UP
+			Robot.driveBase.mecanumDrive(0, -.3, -.45);
+
+			Robot.shooter.encoderShoot(shootSpeed);
+
+		} else if (autoTimer < 480) {// SHOOT
+			Robot.driveBase.mecanumDrive(0, -.55, 0);
+
 			Robot.shooter.feed();
-		}
-	}
-	
-public void autoVisLeft(){
-		
-		if(autoTimer < 75){ //DRIVING FORWARD
-			Robot.driveBase.gyroMecanumDrive(0, 0, -.7, 0);
-		}else if (autoTimer<100){ //TURN TO GEAR
-			Robot.driveBase.setGyroPIDControl(60);
-		}else if (autoTimer<175){ //DRIVE TO GEAR
-			if(autoTimer == 101){
-				Robot.driveBase.setNoPid();
-			}
-			
-			if(SmartDashboard.getNumber("angle", 0) > 5){
-				Robot.driveBase.gyroMecanumDrive(0, 0, -.45, 60);
-			}else if(SmartDashboard.getNumber("angle", 0) < -5){
-				Robot.driveBase.gyroMecanumDrive(0, -.2, -.45, 60);
-			}else{
-				Robot.driveBase.gyroMecanumDrive(0, .2, -.45, 60);
-			}
-			
-		}else if (autoTimer<200){ //DROP GEAR
-			Robot.gear.open();
-			Robot.driveBase.mecanumDrive(0, 0, 0);
-			
-		}else if (autoTimer<230){ //DRIVE BACK
-			Robot.driveBase.gyroMecanumDrive(0, 0, .6, 60);
-			if(autoTimer >255){
-				Robot.gear.close();
-			}
+
+			Robot.shooter.encoderShoot(shootSpeed);
+
+		} else if (autoTimer < 495) {
+			Robot.shooter.feed();
 			Robot.shooter.shoot(shootSpeed);
-		}else if (autoTimer<270){ //TURN TO SHOOT
-			Robot.driveBase.setGyroPIDControl(-90);
-		}else if (autoTimer<355){ //DRIVE TO HOPPER
-			if(autoTimer == 271){
+			Robot.driveBase.mecanumDrive(-.35, 0, 0);
+
+			Robot.shooter.encoderShoot(shootSpeed);
+
+		} else {
+			Robot.shooter.feed();
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+
+			Robot.shooter.encoderShoot(shootSpeed);
+
+		}
+	}
+
+	public void autoVisLeft() {
+
+		if (autoTimer < 71) { // DRIVING FORWARD
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.68, 0);
+		} else if (autoTimer < 125) { // TURN TO GEAR
+			Robot.driveBase.setGyroPIDControl(60);
+		} else if (autoTimer < 200) { // DRIVE TO GEAR
+			if (autoTimer == 126) {
 				Robot.driveBase.setNoPid();
 			}
-			Robot.driveBase.gyroMecanumDrive(0, 0, -.5, -90);
-			
-		}else if(autoTimer < 370){ //LET HOPPER EMPTY && INTAKE
-			Robot.driveBase.mecanumDrive(0, -.5, 0);
-		}else if(autoTimer < 390){//POSITION FOR SHOOT && RAMP UP
-			Robot.driveBase.mecanumDrive(0, -.3, -.3);
-		}else {//SHOOT
+
+			if (SmartDashboard.getBoolean("targetInFrame", false)) {
+				visionSeen = true;
+			}
+
+			double angle = SmartDashboard.getNumber("angle", 0);
+
+			if (angle > 4) {
+				Robot.driveBase.gyroMecanumDrive(0, 0, -.45, 60);
+			} else if (angle < -4) {
+				Robot.driveBase.gyroMecanumDrive(0, 0, -.45, 60);
+			} else {
+				Robot.driveBase.gyroMecanumDrive(0, 0, -.45, 60);
+			}
+
+		} else if (autoTimer < 250) { // DROP GEAR
+			// if (visionSeen) {
+			Robot.gear.open();
+			// }
 			Robot.driveBase.mecanumDrive(0, 0, 0);
+
+			Robot.shooter.encoderShoot(shootSpeed);
+
+		} else if (autoTimer < 280) { // DRIVE BACK
+			Robot.driveBase.gyroMecanumDrive(0, 0, .6, 60);
+
+
+		} else if (autoTimer < 320) { // TURN TO SHOOT
+			Robot.driveBase.setGyroPIDControl(90);
+
+
+		} else if (autoTimer < 405) { // DRIVE TO HOPPER
+			if (autoTimer == 321) {
+				Robot.driveBase.setNoPid();
+			}
+			Robot.gear.close();
+			Robot.driveBase.gyroMecanumDrive(0, 0, .5, 90);
+
+			Robot.shooter.encoderShoot(shootSpeed);
+
+		} else if (autoTimer < 465) {// POSITION FOR SHOOT && RAMP UP
+			Robot.driveBase.mecanumDrive(0, -.3, .45);
+
+			Robot.shooter.encoderShoot(shootSpeed);
+
+		} else if (autoTimer < 485) {// SHOOT
+			Robot.driveBase.mecanumDrive(0, -.4, 0);
+
 			Robot.shooter.feed();
+
+			Robot.shooter.encoderShoot(shootSpeed);
+
+		} else if (autoTimer < 500) {
+			Robot.shooter.feed();
+			Robot.driveBase.mecanumDrive(.3, 0, 0);
+
+			Robot.shooter.encoderShoot(shootSpeed);
+
+		} else {
+			Robot.shooter.feed();
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+
+			Robot.shooter.encoderShoot(shootSpeed);
+		}
+
+	}
+
+	public void autoVisRightShoot() {
+		if (autoTimer < 75) { // DRIVING FORWARD
+			Robot.gear.hopperOpen();
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.68, 0);
+		} else if (autoTimer < 125) { // TURN TO GEAR
+			Robot.driveBase.setGyroPIDControl(-60);
+		} else if (autoTimer < 225) { // DRIVE TO GEAR
+			if (autoTimer == 126) {
+				Robot.driveBase.setNoPid();
+			}
+
+			if (SmartDashboard.getBoolean("targetInFrame", false)) {
+				visionSeen = true;
+			}
+
+			double angle = SmartDashboard.getNumber("angle", 0);
+
+			if (angle > 8) {
+				Robot.driveBase.gyroMecanumDrive(0, .30, -.25, 0);
+			} else if (angle > 3) {
+				Robot.driveBase.gyroMecanumDrive(0, .2, -.25, 0);
+			} else if (angle > 4) {
+				Robot.driveBase.gyroMecanumDrive(0, .2, -.25, 0);
+			} else if (angle < -8) {
+				Robot.driveBase.gyroMecanumDrive(0, -.3, -.25, 0);
+			} else if (angle < -3) {
+				Robot.driveBase.gyroMecanumDrive(0, -.2, -.25, 0);
+			} else if (angle < -4) {
+				Robot.driveBase.gyroMecanumDrive(0, -.2, -.25, 0);
+			} else {
+				Robot.driveBase.gyroMecanumDrive(0, 0, -.25, 0);
+			}
+
+		} else if (autoTimer < 250) { // DROP GEAR
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+
+			Robot.gear.open();
+
+			// if (visionSeen) {
+
+			// }
+
+		} else if (autoTimer < 280) { // DRIVE BACK
+			Robot.driveBase.gyroMecanumDrive(0, 0, .6, -60);
+
+			Robot.shooter.shoot(shootSpeed);
+		} else if (autoTimer < 320) { // TURN TO SHOOT
+			Robot.driveBase.setGyroPIDControl(90);
+		} else if (autoTimer < 405) { // DRIVE TO HOPPER
+			if (autoTimer == 321) {
+				Robot.driveBase.setNoPid();
+			}
+			Robot.gear.close();
+			Robot.driveBase.gyroMecanumDrive(0, -.2, -.5, 90);
+
+		} else if (autoTimer < 440) {// POSITION FOR SHOOT && RAMP UP
+			Robot.driveBase.mecanumDrive(0, -.5, -.3);
+		} else if (autoTimer < 460) {// SHOOT
+			Robot.driveBase.mecanumDrive(0, -.2, 0);
+			Robot.shooter.feed();
+		} else {
+			Robot.shooter.feed();
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+		}
+	}
+
+	public void autoVisLeftShoot() {
+
+		if (autoTimer < 75) { // DRIVING FORWARD
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.68, 0);
+		} else if (autoTimer < 125) { // TURN TO GEAR
+			Robot.driveBase.setGyroPIDControl(60);
+		} else if (autoTimer < 225) { // DRIVE TO GEAR
+			if (autoTimer == 126) {
+				Robot.driveBase.setNoPid();
+			}
+
+			if (SmartDashboard.getBoolean("targetInFrame", false)) {
+				visionSeen = true;
+			}
+
+			double angle = SmartDashboard.getNumber("angle", 0);
+
+			if (angle > 8) {
+				Robot.driveBase.gyroMecanumDrive(0, .30, -.25, 0);
+			} else if (angle > 3) {
+				Robot.driveBase.gyroMecanumDrive(0, .2, -.25, 0);
+			} else if (angle > 4) {
+				Robot.driveBase.gyroMecanumDrive(0, .2, -.25, 0);
+			} else if (angle < -8) {
+				Robot.driveBase.gyroMecanumDrive(0, -.3, -.25, 0);
+			} else if (angle < -3) {
+				Robot.driveBase.gyroMecanumDrive(0, -.2, -.25, 0);
+			} else if (angle < -4) {
+				Robot.driveBase.gyroMecanumDrive(0, -.2, -.25, 0);
+			} else {
+				Robot.driveBase.gyroMecanumDrive(0, 0, -.25, 0);
+			}
+
+		} else if (autoTimer < 250) { // DROP GEAR
+			// if (visionSeen) {
+			Robot.gear.open();
+			// }
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+
+		} else if (autoTimer < 280) { // DRIVE BACK
+			Robot.driveBase.gyroMecanumDrive(0, 0, .6, 60);
+
+			Robot.shooter.shoot(shootSpeed);
+		} else if (autoTimer < 320) { // TURN TO SHOOT
+			Robot.driveBase.setGyroPIDControl(90);
+		} else if (autoTimer < 395) { // DRIVE TO HOPPER
+			if (autoTimer == 321) {
+				Robot.driveBase.setNoPid();
+			}
+			Robot.gear.close();
+			Robot.driveBase.gyroMecanumDrive(0, 0, .5, 90);
+
+		} else if (autoTimer < 405) {
+			Robot.driveBase.gyroMecanumDrive(0, 0, .5, 90);
+		} else if (autoTimer < 440) {// POSITION FOR SHOOT && RAMP UP
+			Robot.driveBase.mecanumDrive(0, -.3, .45);
+		} else if (autoTimer < 460) {// SHOOT
+			Robot.driveBase.mecanumDrive(0, -.5, 0);
+
+			Robot.shooter.feed();
+		} else if(autoTimer < 470){
+			
+			Robot.driveBase.mecanumDrive(.3, 0, 0);
+			
+		}else{
+			
+			Robot.driveBase.mecanumDrive(0, 0, .8);
+			Robot.shooter.feed();
+		}
+
+	}
+
+	void visTester() {
+
+		double angle = SmartDashboard.getNumber("angle", 0);
+
+		if (angle > 8) {
+			Robot.driveBase.gyroMecanumDrive(0, .30, -.25, 0);
+		} else if (angle > 3) {
+			Robot.driveBase.gyroMecanumDrive(0, .2, -.25, 0);
+		} else if (angle > 4) {
+			Robot.driveBase.gyroMecanumDrive(0, .2, -.25, 0);
+		} else if (angle < -8) {
+			Robot.driveBase.gyroMecanumDrive(0, -.3, -.25, 0);
+		} else if (angle < -3) {
+			Robot.driveBase.gyroMecanumDrive(0, -.2, -.25, 0);
+		} else if (angle < -4) {
+			Robot.driveBase.gyroMecanumDrive(0, -.2, -.25, 0);
+		} else {
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.25, 0);
+		}
+
+	}
+
+	public void autoVisRightGround() {
+		if (autoTimer < 71) { // DRIVING FORWARD
+			Robot.gear.hopperOpen();
+			Robot.driveBase.gyroMecanumDrive(0, 0, .72, 0);
+		} else if (autoTimer < 125) { // TURN TO GEAR
+			Robot.driveBase.setGyroPIDControl(-60);
+		} else if (autoTimer < 200) { // DRIVE TO GEAR
+			if (autoTimer == 126) {
+				Robot.driveBase.setNoPid();
+			}
+
+			if (SmartDashboard.getBoolean("targetInFrame", false)) {
+				visionSeen = true;
+			}
+
+			double angle = SmartDashboard.getNumber("angle", 0);
+
+			if (angle > 4) {
+				Robot.driveBase.gyroMecanumDrive(0, 0, .45, -60);
+			} else if (angle < -4) {
+				Robot.driveBase.gyroMecanumDrive(0, 0, .45, -60);
+			} else {
+				Robot.driveBase.gyroMecanumDrive(0, 0, .45, -60);
+			}
+
+		} else if (autoTimer < 225) { // DROP GEAR
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+
+			// Robot.gear.open();
+			Robot.intake.outtakeMethod();
+
+			Robot.shooter.shoot(shootSpeed);
+			// if (visionSeen) {
+
+			// }
+
+		} else if (autoTimer < 255) { // DRIVE BACK
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.6, -60);
+
+			Robot.shooter.shoot(shootSpeed);
+		} else if (autoTimer < 295) { // TURN TO SHOOT
+			Robot.driveBase.setGyroPIDControl(-90);
+		} else if (autoTimer < 380) { // DRIVE TO HOPPER
+			if (autoTimer == 296) {
+				Robot.driveBase.setNoPid();
+			}
+			Robot.gear.close();
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.5, -90);
+
+		} else if (autoTimer < 440) {// POSITION FOR SHOOT && RAMP UP
+			Robot.driveBase.mecanumDrive(0, .3, -.45);
+		} else if (autoTimer < 460) {// SHOOT
+			Robot.driveBase.mecanumDrive(0, .5, 0);
+
+			Robot.shooter.feed();
+		} else if (autoTimer < 470) {
+			Robot.shooter.feed();
+			Robot.shooter.shoot(shootSpeed);
+			Robot.driveBase.mecanumDrive(-.3, 0, 0);
+		} else {
+			Robot.shooter.feed();
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+		}
+	}
+
+	public void autoVisLeftGround() {
+
+		if (autoTimer < 71) { // DRIVING FORWARD
+			Robot.driveBase.gyroMecanumDrive(0, 0, .77, 0);
+		} else if (autoTimer < 125) { // TURN TO GEAR
+			Robot.driveBase.setGyroPIDControl(60);
+		} else if (autoTimer < 200) { // DRIVE TO GEAR
+			if (autoTimer == 126) {
+				Robot.driveBase.setNoPid();
+			}
+
+			if (SmartDashboard.getBoolean("targetInFrame", false)) {
+				visionSeen = true;
+			}
+
+			double angle = SmartDashboard.getNumber("angle", 0);
+
+			if (angle > 4) {
+				Robot.driveBase.gyroMecanumDrive(0, 0, .45, 60);
+			} else if (angle < -4) {
+				Robot.driveBase.gyroMecanumDrive(0, 0, .45, 60);
+			} else {
+				Robot.driveBase.gyroMecanumDrive(0, 0, .45, 60);
+			}
+
+		} else if (autoTimer < 225) { // DROP GEAR
+
+			// Robot.gear.open();
+			Robot.intake.outtake();
+
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+			Robot.shooter.shoot(shootSpeed);
+
+		} else if (autoTimer < 255) { // DRIVE BACK
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.6, 60);
+
+		} else if (autoTimer < 310) { // TURN TO SHOOT  // WAS 295
+			Robot.driveBase.setGyroPIDControl(-90);
+		} else if (autoTimer < 370) { // DRIVE TO HOPPER
+			
+			Robot.driveBase.setNoPid();
+			
+			Robot.gear.close();
+			Robot.driveBase.gyroMecanumDrive(0, 0, .5, -90);
+
+		} else if (autoTimer < 440) {// POSITION FOR SHOOT && RAMP UP
+			Robot.driveBase.mecanumDrive(0, -.3, .45);
+		} else if (autoTimer < 460) {// SHOOT
+			Robot.driveBase.mecanumDrive(0, -.5, 0);
+
+			Robot.shooter.feed();
+		} else if (autoTimer < 470) {
+			Robot.shooter.feed();
+			Robot.shooter.shoot(shootSpeed);
+			Robot.driveBase.mecanumDrive(.3, 0, 0);
+		} else {
+			Robot.shooter.feed();
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+		}
+
+	}
+	
+	public void autoVisCenterGround() {
+
+		if (autoTimer < 125) { // DRIVING FORWARD
+			Robot.driveBase.gyroMecanumDrive(0, 0, .4, 0);
+		}else if (autoTimer < 150) { // DROP GEAR
+
+			// Robot.gear.open();
+			Robot.intake.outtake();
+
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+
+		} else if (autoTimer < 245) { // DRIVE BACK
+			
+			Robot.intake.outtake();
+			Robot.driveBase.gyroMecanumDrive(0, 0, -.3, 0);
+
+		} else if (autoTimer < 360){
+			
+			Robot.driveBase.gyroMecanumDrive(0, 0, .25, 0);
+			
+		}else {
+			
+			Robot.driveBase.mecanumDrive(0, 0, 0);
+			
 		}
 		
 	}
-	
+
+	public void twist() {
+		Robot.driveBase.setGyroPIDControl(60);
+		
+		SmartDashboard.putNumber("YAW", Robot.driveBase.getAngle());
+	}
+
 }

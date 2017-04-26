@@ -30,6 +30,7 @@ public class Gear extends Subsystem {
 	int distanceAuto = 100;
 	
 	DoubleSolenoid solGear = new DoubleSolenoid(RobotMap.solGear[0], RobotMap.solGear[1]);
+	DoubleSolenoid solHopperDropper = new DoubleSolenoid(RobotMap.solHopperDropper[0], RobotMap.solHopperDropper[1]);
 
 	public void initDefaultCommand() {
 		// Set the default command for a subsystem here.
@@ -42,6 +43,14 @@ public class Gear extends Subsystem {
 	
 	public void close(){
 		solGear.set(DoubleSolenoid.Value.kForward);
+	}
+	
+	public void hopperOpen(){
+		solHopperDropper.set(DoubleSolenoid.Value.kForward);
+	}
+	
+	public void hopperClose(){
+		solHopperDropper.set(DoubleSolenoid.Value.kReverse);
 	}
 	
 	public void sequenceStart(){
